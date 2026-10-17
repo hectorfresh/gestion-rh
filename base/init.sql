@@ -5,16 +5,24 @@ CREATE TABLE poste(
     id SERIAL PRIMARY KEY,
     libelle TEXT NOT NULL
 );
+CREATE TABLE statut(
+    id SERIAL PRIMARY KEY,
+    libelle TEXT NOT NULL
+);
 
 
 CREATE TABLE besoin(
     id SERIAL PRIMARY KEY,
     poste_id INTEGER NOT NULL,
+    statut_id INTEGER, 
     nombre INTEGER NOT NULL CHECK (nombre > 0),
     daty TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_besoin_poste
-        FOREIGN KEY(poste_id) REFERENCES poste(id)
+        FOREIGN KEY(poste_id) REFERENCES poste(id), 
+    
+    CONSTRAINT fk_besoin_statut
+        FOREIGN KEY(statut_id) REFERENCES statut(id), 
 );
 
 CREATE TABLE annonce(
@@ -46,10 +54,6 @@ CREATE TABLE utilisateur(
 );
 
 
-CREATE TABLE statut(
-    id SERIAL PRIMARY KEY,
-    libelle TEXT NOT NULL
-);
 
 
 CREATE TABLE gender(
@@ -76,6 +80,7 @@ CREATE TABLE candidature(
     daty TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     candidat_id INTEGER,
     annonce_id INTEGER,
+    salaire_estime NUMERIC(12,2),
 
     CONSTRAINT fk_candidature_candidat
         FOREIGN KEY(candidat_id) REFERENCES candidat(id),

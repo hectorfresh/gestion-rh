@@ -1,0 +1,52 @@
+====================SPRINT 1==========================================================
+
+Architecture à suivre : Structure MVC (model , service , controller) : pas de couche service pour le moment
+
+Utiliser le template dans le dossier public/assets/dists  : Il faut faire l'integration des pages 
+
+LOGIN à faire en dernier
+
+I . CREATION DES BESOINS 
+
+    -Affichage : 
+        -Créer page création besoin (quel poste, nombre , daty ) : formulaire (utiliser les blocs de formulaire dans le template)
+        -Créer une page de validation des besoins : liste déroulante ou recherche : formulaire (utiliser les blocs de formulaire dans le template)
+
+    -Metier: 
+        -creer classe besoinModel + insertion dans la base 
+        -créer une classe besoinController + une fonction valider pour valider un besoin : 
+            . changer le statut du besoin puis enregistrer le nom du responsable qui a valider le besoin (rh, finance, dg , rh )
+
+
+            RH->finance->dg->rh->ouverture recrutement (generation offre )
+
+II . GENERATION DES OFFRES 
+
+    -Affichage : 
+        -Créer une page qui affiche la liste des offres créées à partir des besoins (utiliser poste_id dans besoin ) : utiliser des divs alignés 
+        (utiliser le modele dans le template )
+        -En dessous des divs mettre un bouton postuler qui redirige vers une page pour postuler :
+
+   -Metier  : 
+        . Créer une fonction Annonce[] genererOffres(Besoin[] besoins) : générer des offres
+
+
+
+III . CREATION CV + candidature
+    - Affichage:
+        -page postuler (cv etc): 
+                créer un formulaire (nom, prenom, etc, diplome, experience, prestation salarial, date et lieu de travail) : creer une transactions
+
+    -Metier :
+         . Creer une fonction postuler : insert dans cv, diplome_cv , experience, competence, cv_competence 
+
+IV . Validation candidature + Creation Contrat (recrutement )
+        -Affichage : 
+            -page liste des candidatures : quand on clique sur une candidature on doit voir sa fiche 
+                puis on choisit parmi la liste deroulante entre (cdd, cdi, essai) puis on 
+                a un bouton valider 
+            -Par defaut on fait un essai(6 mois renouvelable 1 fois ) si on ne selectionne pas cdd (2ans renouvelable) et cdi             
+        -Metier : 
+            -creer une fonction valider candidature : (Creation contrat, insert dans contrat et update statut candidature + insert dans la table historique candidature )
+            
+
