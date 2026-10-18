@@ -51,57 +51,6 @@ IV . Validation candidature + Creation Contrat (recrutement )
             
 
 
-. Développeur 1 — Besoins et workflow
-        Responsable du module Besoins
-
-        Backend + Frontend
-        Intégrer le template pour les pages de besoins.
-
-        Créer la page de création d'un besoin.
-
-        Créer la page de liste et de validation.
-
-        Développer BesoinModel et BesoinController.
-
-        Implémenter le workflow RH → Finance → DG → RH.
-
-        Enregistrer le statut et l'historique des validations.
-        Livrable : un besoin peut être créé, soumis, validé ou rejeté.
-
-. Développeur 2 — Offres et candidatures
-        Responsable du parcours candidat
-
-        Backend + Frontend
-        Créer la liste des offres de recrutement.
-
-        Développer la génération des offres à partir des besoins approuvés.
-
-        Créer la page de consultation d'une offre et le bouton « Postuler ».
-
-        Développer le formulaire de candidature.
-
-        Enregistrer le CV, les diplômes, les expériences et les compétences.
-
-        Relier chaque candidature à son offre.
-        Livrable : un candidat peut consulter une offre et déposer sa candidature.
-
-. Développeur 3 — Recrutement et contrats
-        Responsable du traitement des candidatures
-
-        Backend + Frontend
-        Créer la liste des candidatures.
-
-        Créer la fiche détaillée d'une candidature.
-
-        Implémenter la validation ou le refus d'une candidature.
-
-        Gérer le choix du type de contrat.
-
-        Développer la création du contrat.
-
-        Mettre à jour le statut de la candidature et son historique.
-        Livrable : un responsable peut traiter une candidature et créer le contrat correspondant.
-
 
 
 
