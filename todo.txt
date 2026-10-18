@@ -51,6 +51,14 @@ IV . Validation candidature + Creation Contrat (recrutement )
             
 
 
+V . CREATION DES UTILISATEURS (dg, rh, finance, manager)
+
+    -Creer les roles + gestion des pages et session  : 
+        . gerer les routes selon le role utilisateurs . 
+    
+    -Créer le formulaire de login 
+
+
 
 
 
