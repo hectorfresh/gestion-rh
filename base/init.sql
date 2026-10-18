@@ -5,11 +5,11 @@ CREATE TABLE poste(
     id SERIAL PRIMARY KEY,
     libelle TEXT NOT NULL
 );
+
 CREATE TABLE statut(
     id SERIAL PRIMARY KEY,
     libelle TEXT NOT NULL
 );
-
 
 CREATE TABLE besoin(
     id SERIAL PRIMARY KEY,

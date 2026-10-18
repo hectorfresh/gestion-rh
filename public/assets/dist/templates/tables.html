@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Gestion des commandes | Administration</title>
+
+    <link rel="stylesheet" href="../css/tabler.min.css">
+
+    <style>
+        :root {
+            --app-bg: #f5f7fb;
+            --app-border: #e6eaf0;
+            --app-primary: #206bc4;
+            --app-text: #182433;
+            --app-muted: #667382;
+        }
+
+        body {
+            background: var(--app-bg);
+            color: var(--app-text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .navbar-brand {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: -0.035em;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            margin-right: 10px;
+            color: #fff;
+            background: var(--app-primary);
+            border-radius: 9px;
+            vertical-align: middle;
+        }
+
+        .page-wrapper {
+            min-height: calc(100vh - 60px);
+        }
+
+        .page-header {
+            padding-top: 32px;
+            padding-bottom: 24px;
+        }
+
+        .page-pretitle {
+            color: var(--app-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+        .page-title {
+            margin-top: 4px;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.045em;
+        }
+
+        .page-description {
+            margin-top: 6px;
+            color: var(--app-muted);
+            font-size: 0.875rem;
+        }
+
+        .card {
+            border: 1px solid var(--app-border);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgb(24 36 51 / 2%);
+        }
+
+        .stat-card .card-body {
+            padding: 20px;
+        }
+
+        .stat-label {
+            color: var(--app-muted);
+            font-size: 0.83rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            margin-top: 9px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.045em;
+            line-height: 1.2;
+        }
+
+        .stat-foot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            color: var(--app-muted);
+            font-size: 0.76rem;
+        }
+
+        .stat-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+        }
+
+        .section-heading {
+            font-size: 1rem;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+        }
+
+        .table-card {
+            overflow: hidden;
+        }
+
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .table-toolbar-info {
+            color: var(--app-muted);
+            font-size: 0.82rem;
+            margin-top: 4px;
+        }
+
+        .table-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--app-border);
+            background: #fff;
+        }
+
+        .search-field {
+            width: min(100%, 310px);
+        }
+
+        .table-responsive {
+            scrollbar-width: thin;
+        }
+
+        .data-table {
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        .data-table thead th {
+            padding: 13px 18px;
+            background: #fafbfd;
+            color: #748094;
+            border-bottom: 1px solid var(--app-border);
+            font-size: 0.70rem;
+            font-weight: 700;
+            letter-spacing: 0.055em;
+            text-transform: uppercase;
+        }
+
+        .data-table tbody td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #edf0f4;
+            vertical-align: middle;
+            font-size: 0.84rem;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .order-number {
+            color: var(--app-primary);
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .order-number:hover {
+            text-decoration: underline;
+        }
+
+        .customer-cell {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: var(--app-text);
+        }
+
+        .customer-email {
+            margin-top: 3px;
+            color: var(--app-muted);
+            font-size: 0.76rem;
+        }
+
+        .avatar-initials {
+            display: inline-flex;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            width: 37px;
+            height: 37px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .amount {
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date-main {
+            font-weight: 550;
+        }
+
+        .date-sub {
+            margin-top: 3px;
+            color: var(--app-muted);
+            font-size: 0.76rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-paid {
+            color: #18794e;
+            background: #e8f7ef;
+        }
+
+        .status-pending {
+            color: #936300;
+            background: #fff4d6;
+        }
+
+        .status-cancelled {
+            color: #bd3030;
+            background: #fdeaea;
+        }
+
+        .status-processing {
+            color: #206bc4;
+            background: #e8f1fc;
+        }
+
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            color: #687588;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            text-decoration: none;
+        }
+
+        .action-link:hover {
+            color: var(--app-primary);
+            background: #eef5fd;
+            border-color: #dceafb;
+        }
+
+        .table-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 17px 22px;
+            border-top: 1px solid var(--app-border);
+            background: #fff;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            min-width: 34px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .footer-note {
+            color: var(--app-muted);
+            font-size: 0.8rem;
+        }
+
+        .table-caption {
+            color: var(--app-muted);
+            font-size: 0.8rem;
+        }
+
+        .required-mark {
+            color: #d63939;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-header {
+                padding-top: 22px;
+                padding-bottom: 18px;
+            }
+
+            .page-title {
+                font-size: 1.45rem;
+            }
+
+            .table-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 18px;
+            }
+
+            .table-toolbar .btn {
+                width: 100%;
+            }
+
+            .table-filters {
+                padding: 14px 18px;
+            }
+
+            .search-field {
+                width: 100%;
+            }
+
+            .table-footer {
+                padding: 16px 18px;
+            }
+
+            .table-footer .pagination {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .no-print,
+            .navbar {
+                display: none !important;
+            }
+
+            .card {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+        <a href="#" class="navbar-brand text-reset" aria-label="Accueil administration">
+            <span class="brand-mark">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M4 7l8-4l8 4"></path>
+                    <path d="M4 7v10l8 4l8-4V7"></path>
+                    <path d="M12 11l8-4"></path>
+                    <path d="M12 11v10"></path>
+                    <path d="M12 11L4 7"></path>
+                </svg>
+            </span>
+            Admin<span class="text-primary">Flow</span>
+        </a>
+
+        <div class="navbar-nav flex-row ms-auto align-items-center gap-3">
+            <a href="#" class="nav-link text-secondary" aria-label="Documentation">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"></path>
+                    <path d="M12 17h.01"></path>
+                </svg>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <span class="avatar avatar-sm bg-blue-lt text-blue">AD</span>
+                <div class="d-none d-sm-block lh-sm">
+                    <div class="fw-semibold">Administrateur</div>
+                    <div class="text-secondary small">Gestionnaire</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="page-wrapper">
+    <div class="container-xl">
+        <div class="page-header d-print-none">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">Administration / Ventes</div>
+                    <h1 class="page-title">Gestion des commandes</h1>
+                    <div class="page-description">
+                        Consultez, suivez et gérez les commandes de vos clients.
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="#" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" class="me-1" aria-hidden="true">
+                                <path d="M12 3v12"></path>
+                                <path d="m7 10l5 5l5-5"></path>
+                                <path d="M5 17v4h14v-4"></path>
+                            </svg>
+                            Exporter
+                        </a>
+                        <a href="#" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round" class="me-1" aria-hidden="true">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                            Nouvelle commande
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="row row-cards mb-4" aria-label="Résumé des commandes">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-label">Total des commandes</div>
+                            <span class="stat-icon bg-blue-lt text-blue">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M6 2l1.5 4h9L18 2"></path>
+                                    <path d="M3 6h18l-2 15H5L3 6z"></path>
+                                    <path d="M9 10v5"></path>
+                                    <path d="M15 10v5"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="stat-value">1 284</div>
+                        <div class="stat-foot">
+                            <span class="text-success fw-semibold">+12,8 %</span>
+                            <span>par rapport au mois dernier</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-label">Chiffre d'affaires</div>
+                            <span class="stat-icon bg-green-lt text-green">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 2v20"></path>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="stat-value">24,8 M €</div>
+                        <div class="stat-foot">
+                            <span class="text-success fw-semibold">+8,2 %</span>
+                            <span>par rapport au mois dernier</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-label">En attente</div>
+                            <span class="stat-icon bg-yellow-lt text-yellow">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 7v5l3 2"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="stat-value">36</div>
+                        <div class="stat-foot">
+                            <span>Commandes à traiter</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-label">Commandes annulées</div>
+                            <span class="stat-icon bg-red-lt text-red">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="m9 9l6 6"></path>
+                                    <path d="m15 9l-6 6"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-foot">
+                            <span>Sur la période sélectionnée</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card table-card mb-4">
+            <div class="table-toolbar">
+                <div>
+                    <h2 class="section-heading mb-0">Liste des commandes</h2>
+                    <div class="table-toolbar-info">
+                        Retrouvez et gérez toutes les commandes enregistrées.
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary-lt text-secondary">6 enregistrements affichés</span>
+                </div>
+            </div>
+
+            <form class="table-filters no-print" action="#" method="get">
+                <div class="input-icon search-field">
+                    <span class="input-icon-addon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m20 20l-4-4"></path>
+                        </svg>
+                    </span>
+                    <input type="search" class="form-control"
+                           name="recherche"
+                           placeholder="Rechercher une commande, un client..."
+                           aria-label="Rechercher une commande">
+                </div>
+
+                <select class="form-select" name="statut" aria-label="Filtrer par statut"
+                        style="width: 175px">
+                    <option value="">Tous les statuts</option>
+                    <option value="paid">Payée</option>
+                    <option value="pending">En attente</option>
+                    <option value="processing">En traitement</option>
+                    <option value="cancelled">Annulée</option>
+                </select>
+
+                <select class="form-select" name="periode" aria-label="Filtrer par période"
+                        style="width: 165px">
+                    <option value="">Toutes les périodes</option>
+                    <option value="today">Aujourd'hui</option>
+                    <option value="week">Cette semaine</option>
+                    <option value="month">Ce mois-ci</option>
+                </select>
+
+                <button type="submit" class="btn btn-outline-primary">
+                    Filtrer
+                </button>
+
+                <a href="#" class="btn btn-ghost-secondary">Réinitialiser</a>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-vcenter table-hover data-table">
+                    <caption class="visually-hidden">Liste des commandes clients avec leur référence,
+                        client, date, montant, statut et actions disponibles.</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 48px">
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner toutes les commandes">
+                            </th>
+                            <th scope="col">Référence</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Montant</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Paiement</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-001">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-001</a>
+                                <div class="text-secondary small mt-1">6 articles</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-blue-lt text-blue">RA</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">18 oct. 2026</div>
+                                <div class="date-sub">09:42</div>
+                            </td>
+                            <td><span class="amount">485 000 €</span></td>
+                            <td>
+                                <span class="status-badge status-paid">
+                                    <span class="status-dot"></span>Livrée
+                                </span>
+                            </td>
+                            <td><span class="badge bg-green-lt text-green">Payé</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-001">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-001">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-002">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-002</a>
+                                <div class="text-secondary small mt-1">3 articles</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-purple-lt text-purple">MT</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">17 oct. 2026</div>
+                                <div class="date-sub">16:18</div>
+                            </td>
+                            <td><span class="amount">126 500 €</span></td>
+                            <td>
+                                <span class="status-badge status-processing">
+                                    <span class="status-dot"></span>En traitement
+                                </span>
+                            </td>
+                            <td><span class="badge bg-green-lt text-green">Payé</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-002">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-002">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-003">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-003</a>
+                                <div class="text-secondary small mt-1">2 articles</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-orange-lt text-orange">TN</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">17 oct. 2026</div>
+                                <div class="date-sub">14:05</div>
+                            </td>
+                            <td><span class="amount">78 000 €</span></td>
+                            <td>
+                                <span class="status-badge status-pending">
+                                    <span class="status-dot"></span>En attente
+                                </span>
+                            </td>
+                            <td><span class="badge bg-yellow-lt text-yellow">À payer</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-003">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-003">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-004">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-004</a>
+                                <div class="text-secondary small mt-1">4 articles</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-cyan-lt text-cyan">HL</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">16 oct. 2026</div>
+                                <div class="date-sub">11:27</div>
+                            </td>
+                            <td><span class="amount">320 000 €</span></td>
+                            <td>
+                                <span class="status-badge status-paid">
+                                    <span class="status-dot"></span>Livrée
+                                </span>
+                            </td>
+                            <td><span class="badge bg-green-lt text-green">Payé</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-004">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-004">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-005">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-005</a>
+                                <div class="text-secondary small mt-1">1 article</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-pink-lt text-pink">NV</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">15 oct. 2026</div>
+                                <div class="date-sub">10:11</div>
+                            </td>
+                            <td><span class="amount">42 000 €</span></td>
+                            <td>
+                                <span class="status-badge status-cancelled">
+                                    <span class="status-dot"></span>Annulée
+                                </span>
+                            </td>
+                            <td><span class="badge bg-secondary-lt text-secondary">Remboursé</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-005">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-005">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input class="form-check-input m-0" type="checkbox"
+                                       aria-label="Sélectionner CMD-2026-006">
+                            </td>
+                            <td>
+                                <a href="#" class="order-number">CMD-2026-006</a>
+                                <div class="text-secondary small mt-1">5 articles</div>
+                            </td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="avatar-initials bg-indigo-lt text-indigo">FM</span>
+                                    <div>
+                                        <div class="customer-name">Mike Adrien</div>
+                                        <div class="customer-email">mike@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-main">14 oct. 2026</div>
+                                <div class="date-sub">08:54</div>
+                            </td>
+                            <td><span class="amount">615 000 €</span></td>
+                            <td>
+                                <span class="status-badge status-processing">
+                                    <span class="status-dot"></span>Expédition
+                                </span>
+                            </td>
+                            <td><span class="badge bg-green-lt text-green">Payé</span></td>
+                            <td class="text-end">
+                                <a href="#" class="action-link" aria-label="Voir CMD-2026-006">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7s10 7 10 7s-3.5 7-10 7s-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                                <a href="#" class="action-link" aria-label="Modifier CMD-2026-006">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1l1-4z"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div class="footer-note">
+                    Affichage de <strong>1 à 6</strong> sur <strong>1 284</strong> commandes
+                </div>
+
+                <nav aria-label="Pagination des commandes">
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Page précédente" aria-disabled="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="m15 18l-6-6l6-6"></path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><span class="page-link">…</span></li>
+                        <li class="page-item"><a class="page-link" href="#">214</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Page suivante">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="m9 18l6-6l-6-6"></path>
+                                </svg>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+        <footer class="d-flex flex-wrap justify-content-between align-items-center gap-2 pb-4">
+            <div class="text-secondary small">
+                © 2026 AdminFlow. Tous droits réservés.
+            </div>
+            <div class="text-secondary small">
+                Interface d'administration · Version 1.0
+            </div>
+        </footer>
+    </div>
+</div>
+</body>
+</html>
