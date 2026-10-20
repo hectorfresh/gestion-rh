@@ -10,6 +10,6 @@
     <p>
         Bienvenue <?= esc($user['nom']) ?> !
     </p>
-
+   <a href="<?= site_url('logout') ?>">Se déconnecter</a>
 </body>
 </html>

@@ -11,6 +11,14 @@ class Auth extends BaseController
         return view('login');
     }
 
+    public function logout()
+    {
+        session()->destroy();
+
+        return redirect()->to('/login');
+    }
+
+
     public function connexion()
     {
         $email = $this->request->getPost('email');
