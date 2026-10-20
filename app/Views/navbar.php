@@ -49,6 +49,7 @@
     <?php if ($user['role_id'] == 2): ?>
         <a href="<?= site_url('rh') ?>">Validation RH</a>
         <a href="<?= site_url('annonces') ?>">Créer une annonce</a>
+        <a href="<?= site_url('rh/candidatures') ?>">Suivi des candidatures</a>
     <?php endif; ?>
 
     <?php if ($user['role_id'] == 1): ?>

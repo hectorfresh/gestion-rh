@@ -267,6 +267,94 @@ public function mesCandidatures()
 }
 
 
+public function candidaturesRH()
+{
+    // Vérifier que l'utilisateur est RH
+    if (!session()->has('utilisateur')
+        || session()->get('utilisateur')['role_id'] != 2) {
+        return redirect()->to('/login');
+    }
+
+    $candidatures = db_connect()
+        ->table('candidature')
+        ->select('candidature.id, candidature.daty, candidat.nom, candidat.prenom, candidat.email, annonce.designation, statut.libelle AS statut')
+        ->join('candidat', 'candidat.id = candidature.candidat_id')
+        ->join('annonce', 'annonce.id = candidature.annonce_id')
+        ->join('statut', 'statut.id = candidature.statut_id', 'left')
+        ->orderBy('candidature.daty', 'DESC')
+        ->get()
+        ->getResultArray();
+
+    return view('candidaturesRH', [
+        'candidatures' => $candidatures
+    ]);
+}
+
+
+public function voirCVCandidature($id)
+{
+    if (!session()->has('utilisateur')
+        || session()->get('utilisateur')['role_id'] != 2) {
+        return redirect()->to('/login');
+    }
+
+    $db = db_connect();
+
+    // Récupérer la candidature et le candidat
+    $candidature = $db->table('candidature')
+        ->select('candidature.id, candidat.id AS candidat_id, candidat.nom, candidat.prenom, candidat.email, annonce.designation')
+        ->join('candidat', 'candidat.id = candidature.candidat_id')
+        ->join('annonce', 'annonce.id = candidature.annonce_id')
+        ->where('candidature.id', $id)
+        ->get()
+        ->getRowArray();
+
+    if (!$candidature) {
+        return redirect()->to('/rh/candidatures');
+    }
+
+    // Récupérer le CV
+    $cv = $db->table('cv')
+        ->where('candidat_id', $candidature['candidat_id'])
+        ->get()
+        ->getRowArray();
+
+    $experiences = [];
+    $diplomes = [];
+    $competences = [];
+
+    if ($cv) {
+        // Récupérer les expériences
+        $experiences = $db->table('experience')
+            ->where('cv_id', $cv['id'])
+            ->get()
+            ->getResultArray();
+
+        // Récupérer les diplômes
+        $diplomes = $db->table('diplome_cv')
+            ->select('diplome_cv.*, diplome.libelle')
+            ->join('diplome', 'diplome.id = diplome_cv.diplome_id')
+            ->where('cv_id', $cv['id'])
+            ->get()
+            ->getResultArray();
+
+        // Récupérer les compétences
+        $competences = $db->table('cv_competence')
+            ->select('cv_competence.niveau, competence.libelle')
+            ->join('competence', 'competence.id = cv_competence.competence_id')
+            ->where('cv_id', $cv['id'])
+            ->get()
+            ->getResultArray();
+    }
+
+    return view('voirCV', [
+        'candidature' => $candidature,
+        'cv' => $cv,
+        'experiences' => $experiences,
+        'diplomes' => $diplomes,
+        'competences' => $competences
+    ]);
+}
 
 
 }

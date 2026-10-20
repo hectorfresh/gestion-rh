@@ -17,7 +17,8 @@ $routes->get('rh', 'Besoin::rh');
 $routes->post('rh/traiter', 'Besoin::traiterRh');
 $routes->get('dg', 'Besoin::dg');
 $routes->post('dg/traiter', 'Besoin::traiterDg');
-
+$routes->get('rh/candidatures', 'Auth::candidaturesRH');
+$routes->get('rh/candidature/(:num)', 'Auth::voirCVCandidature/$1');
 
 $routes->get('annonces', 'Besoin::annonces');
 $routes->post('annonces/creer', 'Besoin::creerAnnonce');
