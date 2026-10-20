@@ -5,22 +5,22 @@
 </head>
 <body>
 
-    <h1>Espace candidat</h1>
+    <?= view('navbarCandidat') ?>
 
-    <p>
-        Bienvenue <?= esc($candidat['prenom']) ?>
-        <?= esc($candidat['nom']) ?> !
-    </p>
+    <div class="contenu-candidat">
 
-    <a href="<?= site_url('annonces/liste') ?>">
-        Consulter les annonces et postuler
-    </a>
+        <h1>Accueil candidat</h1>
 
-    <br><br>
+        <p>
+            Bienvenue <?= esc($candidat['prenom']) ?>
+            <?= esc($candidat['nom']) ?> !
+        </p>
 
-    <a href="<?= site_url('candidat/logout') ?>">
-        Se déconnecter
-    </a>
+        <p>
+            Consultez les annonces de recrutement et suivez vos candidatures.
+        </p>
+
+    </div>
 
 </body>
 </html>

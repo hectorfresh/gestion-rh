@@ -243,7 +243,28 @@ public function formulaireCV($annonceId)
 
 
 
+public function mesCandidatures()
+{
+    if (!session()->has('candidat')) {
+        return redirect()->to('/candidat/login');
+    }
 
+    $candidat = session()->get('candidat');
+
+    $candidatures = db_connect()
+        ->table('candidature')
+        ->select('candidature.daty, annonce.designation, statut.libelle AS statut')
+        ->join('annonce', 'annonce.id = candidature.annonce_id')
+        ->join('statut', 'statut.id = candidature.statut_id', 'left')
+        ->where('candidature.candidat_id', $candidat['id'])
+        ->orderBy('candidature.daty', 'DESC')
+        ->get()
+        ->getResultArray();
+
+    return view('mesCandidatures', [
+        'candidatures' => $candidatures
+    ]);
+}
 
 
 

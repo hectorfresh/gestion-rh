@@ -33,7 +33,7 @@ $routes->post('candidat/enregistrer', 'Auth::enregistrerCandidat');
 $routes->post('candidat/connexion', 'Auth::connexionCandidat');
 $routes->post('candidat/postuler', 'Auth::postuler');
 $routes->get('candidat/cv/(:num)', 'Auth::formulaireCV/$1');
-
+$routes->get('candidat/candidatures', 'Auth::mesCandidatures');
 
 
 $routes->get('candidat/accueil', 'Auth::accueilCandidat');

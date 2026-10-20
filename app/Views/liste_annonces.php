@@ -5,9 +5,16 @@
 </head>
 <body>
 
-<?php if (session()->has('utilisateur')): ?>
+<?php if (session()->has('candidat')): ?>
+
+    <?= view('navbarCandidat') ?>
+
+<?php elseif (session()->has('utilisateur')): ?>
+
     <?= view('navbar') ?>
+
 <?php endif; ?>
+
 
 <div class="contenu">
     <h1>Annonces de recrutement</h1>

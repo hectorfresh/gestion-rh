@@ -4,12 +4,13 @@
     <title>Mon CV</title>
 </head>
 <body>
+    <?= view('navbarCandidat') ?>
+    <div class="contenu-candidat">
+        <h1>Compléter mon CV</h1>
 
-    <h1>Compléter mon CV</h1>
-
-    <?php if (session()->getFlashdata('erreur')): ?>
-        <p><?= esc(session()->getFlashdata('erreur')) ?></p>
-    <?php endif; ?>
+        <?php if (session()->getFlashdata('erreur')): ?>
+            <p><?= esc(session()->getFlashdata('erreur')) ?></p>
+        <?php endif; ?>
 
     <form action="<?= site_url('candidat/postuler') ?>" method="post">
 
@@ -48,6 +49,6 @@
         <button type="submit">Envoyer ma candidature</button>
 
     </form>
-
+</div>
 </body>
 </html>
