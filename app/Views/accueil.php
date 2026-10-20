@@ -5,11 +5,19 @@
 </head>
 <body>
 
-    <h1>Page d'accueil</h1>
+    <?= view('navbar') ?>
 
-    <p>
-        Bienvenue <?= esc($user['nom']) ?> !
-    </p>
-   <a href="<?= site_url('logout') ?>">Se déconnecter</a>
+    <div class="contenu">
+
+        <h1>Page d'accueil</h1>
+
+        <p>
+            Bienvenue <?= esc($user['nom']) ?> !
+        </p>
+
+        <p>Bienvenue dans l'application de gestion des ressources humaines.</p>
+
+    </div>
+
 </body>
 </html>

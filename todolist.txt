@@ -5,7 +5,7 @@ BLOC 1 :
     -Rmq statut_besoins  : 
         1 . valide par manager
         2 . valide par rh
-        3 . valide par finance
+//        3 . valide par finance
         4 . valide par DG
 
 
