@@ -3,6 +3,11 @@
 -- BASE DE DONNEES DE GESTION DES RESSOURCES HUMAINES
 -- =====================================================
 
+DROP TABLE departement,type_finance,poste,statut,role,gender,competence,type_contrat,utilisateur,candidat,cv,diplome_cv,experience,cv_competence,besoin,historique_statut_besoin,annonce,candidature,historique_c
+andidature,contrat,employe,finance;
+
+
+
 CREATE DATABASE rh;
 
 -- Connectez-vous a la base rh avant de continuer.

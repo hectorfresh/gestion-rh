@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\UtilisateurModel;
+use App\Models\CandidatModel;
+
 
 class Auth extends BaseController
 {
@@ -50,4 +52,18 @@ class Auth extends BaseController
             'user' => session()->get('utilisateur')
         ]);
     }
+
+    public function loginCandidat()
+    {
+        return view('loginCandidat');
+    }
+
+
+
+   
+
+
+
+
+    
 }
