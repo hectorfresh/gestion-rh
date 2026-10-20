@@ -1,0 +1,148 @@
+BLOC 1 : 
+
+    User connecté : Manager 
+
+    -Rmq statut_besoins  : 
+        1 . valide par manager
+        2 . valide par rh
+        3 . valide par finance
+        4 . valide par DG
+
+
+
+
+    - CREATION BESOIN (POSTE = UN CANDIDAT ) : 
+
+        .Base : 
+            tables : poste  , besoins, 
+
+        .Metier : 
+            Classe PosteModel findAll() 
+            PosteController : Poste[] getListePostes()
+
+            Classe BesoinModel void insert dans table besoin
+            BesoinController : appel fonction insert() + integration et affichage formulaire           
+
+        .Regles Metier : si l'utilisateurs connecté est le dg => validation automatique du besoin 
+                -Dans la table HistoriqueBesoin  : si le dernier id est celui du dg alors on ne peut plus modifier  
+  
+        . Affichage  :
+            - Un Formulaire :
+                . Liste deroulante de poste dans la base : appel getListePostes()        
+                . Description du poste (text area )
+                . Date souhaitee    
+                . Bouton valider + appel fonction insert dans besoin  : statut par defaut en attente 
+
+
+
+
+    - User Connecte  : RH
+
+        -Classe : HistoriqueBesoinModel BesoinModel BesoinController
+
+        -Metier :
+
+            BesoinModel créer fonction void refuserBesoin(int id) et void validerBesoin (int id) : update statut besoin + insert dans historiques_besoin 
+            HistoriqueModel : findbyid
+             refuser(int id) / accepter(int id) : Update statut dans la table besoin  + Insert dans HistoriqueStatutBesoin
+            BesoinController : appel accepter(int id )  / refuser(int id)
+
+        Affichage :  
+            -Page Fiche Besoin  : 
+                Affichage des informations + bouton valider / refuser 
+
+            -Page Validation  besoin  : 
+                -Tableau liste besoins  : quand on clique on se redirige vers la page fiche + valider ou refuser (appel fonction accepter / refuser dans BesoinController)
+
+
+
+
+    -Finance : 
+
+        -Base  : departement
+        -Classes : Departement 
+
+
+        fonction  : 
+            - calculerSalaireDeTousEmp() (salaire * 12 )  : sommer les salaire de tous les emp dans le contrat et multiplier par 12 qui travaille 
+            - calculerBudgetRestantAnnuelle() : Budget dans finance - calculerSalaireDeTousEmp() 
+        
+        verifierBudget() dans le departement :  - 
+            appel calculerSalaireDeTousEmp 
+            si calculerBudgetRestantAnnuelle() > salaire du nouveau besoin  * 12  
+                Valider 
+            sinon refuser 
+
+
+    -DG : 
+
+        -Classe : HistoriqueBesoinModel
+
+
+            -Metier : 
+
+                BesoinModel créer fonction void refuserBesoin(int id) et void validerBesoin (int id) : update statut besoin + insert dans historiques_besoin 
+                HistoriqueModel : findbyid
+                  : refuser(int id) / accepter(int id) : Update statut dans la table besoin  + Insert dans HistoriqueStatutBesoin
+                BesoinController : appel accepter(int id )  / refuser(int id)
+
+            Affichage :  
+                -Page Fiche Besoin  : 
+                    Affichage des informations + bouton valider / refuser 
+
+                -Page Validation  besoin  : 
+                    -Tableau liste besoins  : quand on clique on se redirige vers la page fiche + valider ou refuser (appel fonction accepter / refuser dans BesoinController)
+
+
+
+
+
+
+
+
+
+=============================BLOC 2==============================================================================================================================
+
+    -RH : 
+
+        -Classe : AnnonceModel
+
+
+        -Metier  : 
+            BesoinModel getBesoinsValidees() : 
+                -recuperer les besoins valides par le dg 
+
+            AnnonceModel insert() : 
+                -insert dans la table annonces, 
+                -findAll()
+
+
+                getBesoinsValidees()
+            BesoinController : getBesoinsValidees()
+
+            insert dans la base, findAll
+            AnnonceController  : insert dans la base + appel formulaire + liste des annonces , findAll
+
+
+
+        -Affichage  : 
+            -creer page Annonce :
+                -Formulaire : 
+                    .Liste deroulante Besoin validees : appel + getBesoinsValidees()
+                    .daty
+                    .designation  
+                    .bouton publier  : appel  insert dans annonceController 
+
+
+            -Liste des Annonces  : appel findAll  + page liste annonce avec bouton postuler
+
+                -Quand on clique sur postuler   : on se redirige vers la page de CV 
+                    page CV : 
+                        - Liste deroulante diplome : appel 
+                        -Petit formulaire pop up saisie Experience  : desc , etablissement
+
+
+
+
+
+    
