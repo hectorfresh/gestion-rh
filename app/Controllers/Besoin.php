@@ -325,9 +325,6 @@ db_connect()->table('annonce')->insert([
 
 public function listeAnnonces()
 {
-    if (!session()->has('utilisateur')) {
-        return redirect()->to('/login');
-    }
 
     $annonces = db_connect()
         ->table('annonce')

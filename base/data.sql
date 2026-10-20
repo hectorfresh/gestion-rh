@@ -63,3 +63,11 @@ VALUES ('Ouverture validée');
 
 INSERT INTO statut (libelle)
 VALUES ('Ouverture refusée');
+
+
+
+INSERT INTO gender (libelle)
+VALUES ('Homme');
+
+INSERT INTO gender (libelle)
+VALUES ('Femme');

@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Models;
+
 use CodeIgniter\Model;
 
-class CAndidatModel extends MOdel{
-
+class CandidatModel extends Model
+{
     protected $table = 'candidat';
     protected $primaryKey = 'id';
 
@@ -12,6 +14,6 @@ class CAndidatModel extends MOdel{
         'prenom',
         'gender_id',
         'email',
-        'mdp',
+        'mdp'
     ];
 }

@@ -5,10 +5,19 @@
 </head>
 <body>
 
-<?= view('navbar') ?>
+<?php if (session()->has('utilisateur')): ?>
+    <?= view('navbar') ?>
+<?php endif; ?>
+
 <div class="contenu">
     <h1>Annonces de recrutement</h1>
+        <?php if (session()->getFlashdata('message')): ?>
+            <p><?= esc(session()->getFlashdata('message')) ?></p>
+        <?php endif; ?>
 
+        <?php if (session()->getFlashdata('erreur')): ?>
+            <p><?= esc(session()->getFlashdata('erreur')) ?></p>
+        <?php endif; ?>
     <?php if (empty($annonces)): ?>
 
         <p>Aucune annonce disponible.</p>
@@ -35,6 +44,21 @@
                 <strong>Description du besoin :</strong><br>
                 <?= nl2br(esc($annonce['description_besoin'])) ?>
             </p>
+
+            <?php if (session()->has('candidat')): ?>
+
+                <a href="<?= site_url('candidat/cv/' . $annonce['id']) ?>">
+                    Postuler
+                </a>
+
+            <?php else: ?>
+
+                <a href="<?= site_url('candidat/login') ?>">
+                    Connectez-vous pour postuler
+                </a>
+
+            <?php endif; ?>
+
 
         <?php endforeach; ?>
 
