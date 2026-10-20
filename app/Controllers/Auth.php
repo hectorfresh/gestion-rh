@@ -357,4 +357,79 @@ public function voirCVCandidature($id)
 }
 
 
+
+
+public function retenirCandidature($id)
+{
+    if (!session()->has('utilisateur')
+        || session()->get('utilisateur')['role_id'] != 2) {
+        return redirect()->to('/login');
+    }
+
+    $db = db_connect();
+
+    $candidature = $db->table('candidature')
+        ->where('id', $id)
+        ->get()
+        ->getRowArray();
+
+    if (!$candidature) {
+        return redirect()->to('/rh/candidatures');
+    }
+
+    // 9 = Entretien
+    $db->table('candidature')
+        ->where('id', $id)
+        ->update(['statut_id' => 9]);
+
+    $db->table('historique_candidature')->insert([
+        'candidature_id' => $id,
+        'statut_id' => 9,
+        'commentaire' => 'Candidat retenu pour un entretien'
+    ]);
+
+    return redirect()->to('/rh/candidature/' . $id)
+        ->with('message', 'Le candidat est retenu pour un entretien.');
+}
+
+
+public function refuserCandidature($id)
+{
+    if (!session()->has('utilisateur')
+        || session()->get('utilisateur')['role_id'] != 2) {
+        return redirect()->to('/login');
+    }
+
+    $db = db_connect();
+
+    $candidature = $db->table('candidature')
+        ->where('id', $id)
+        ->get()
+        ->getRowArray();
+
+    if (!$candidature) {
+        return redirect()->to('/rh/candidatures');
+    }
+
+    // 10 = Refusée
+    $db->table('candidature')
+        ->where('id', $id)
+        ->update(['statut_id' => 10]);
+
+    $db->table('historique_candidature')->insert([
+        'candidature_id' => $id,
+        'statut_id' => 10,
+        'commentaire' => 'Candidature refusée par les RH'
+    ]);
+
+    return redirect()->to('/rh/candidature/' . $id)
+        ->with('message', 'La candidature a été refusée.');
+}
+
+
+
+
+
+
+
 }

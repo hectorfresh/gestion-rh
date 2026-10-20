@@ -11,6 +11,40 @@
 
         <h1>CV du candidat</h1>
 
+
+
+
+            <?php if (session()->getFlashdata('message')): ?>
+                <p><?= esc(session()->getFlashdata('message')) ?></p>
+            <?php endif; ?>
+
+            <h2>Décision RH</h2>
+
+            <form method="post"
+                action="<?= site_url('rh/candidature/entretien/' . $candidature['id']) ?>">
+
+                <?= csrf_field() ?>
+
+                <button type="submit">Retenir pour un entretien</button>
+
+            </form>
+
+            <br>
+
+            <form method="post"
+                action="<?= site_url('rh/candidature/refuser/' . $candidature['id']) ?>">
+
+                <?= csrf_field() ?>
+
+                <button type="submit">Refuser la candidature</button>
+
+            </form>
+
+
+
+
+
+
         <h2>
             <?= esc($candidature['prenom']) ?>
             <?= esc($candidature['nom']) ?>

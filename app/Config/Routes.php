@@ -20,6 +20,9 @@ $routes->post('dg/traiter', 'Besoin::traiterDg');
 $routes->get('rh/candidatures', 'Auth::candidaturesRH');
 $routes->get('rh/candidature/(:num)', 'Auth::voirCVCandidature/$1');
 
+$routes->post('rh/candidature/entretien/(:num)', 'Auth::retenirCandidature/$1');
+$routes->post('rh/candidature/refuser/(:num)', 'Auth::refuserCandidature/$1');
+
 $routes->get('annonces', 'Besoin::annonces');
 $routes->post('annonces/creer', 'Besoin::creerAnnonce');
 $routes->get('annonces/liste', 'Besoin::listeAnnonces');

@@ -64,7 +64,23 @@ VALUES ('Ouverture validée');
 INSERT INTO statut (libelle)
 VALUES ('Ouverture refusée');
 
+INSERT INTO statut (libelle)
+SELECT 'Entretien'
+WHERE NOT EXISTS (
+    SELECT 1 FROM statut WHERE libelle = 'Entretien'
+);
 
+INSERT INTO statut (libelle)
+SELECT 'Refusée'
+WHERE NOT EXISTS (
+    SELECT 1 FROM statut WHERE libelle = 'Refusée'
+);
+
+INSERT INTO statut (libelle)
+SELECT 'Retenue après entretien'
+WHERE NOT EXISTS (
+    SELECT 1 FROM statut WHERE libelle = 'Retenue après entretien'
+);
 
 INSERT INTO gender (libelle)
 VALUES ('Homme');
