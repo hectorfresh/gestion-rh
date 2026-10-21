@@ -123,8 +123,8 @@ $uri         = uri_string();
                 <?php if ($role === 'rh' || $role === 'dg'): ?>
                     <a href="/validation" class="<?= str_starts_with($uri, 'validation') ? 'active' : '' ?>">✅ Validation RH</a>
                     <a href="/annonce" class="<?= str_starts_with($uri, 'annonce') ? 'active' : '' ?>">📢 Annonces</a>
-                    <a href="/candidature" class="<?= str_starts_with($uri, 'candidature') ? 'active' : '' ?>">👥 Candidatures</a>
-                    <a href="/emails" class="<?= str_starts_with($uri, 'emails') ? 'active' : '' ?>">📬 Boîte d'envoi</a>
+                    <a href="/candidature" class="<?= str_starts_with($uri, 'candidature') && !str_contains($uri, 'embauches') ? 'active' : '' ?>">👥 Candidatures</a>
+                    <a href="/candidature/embauches" class="<?= str_contains($uri, 'candidature/embauches') ? 'active' : '' ?>">🏆 Candidats embauchés</a>                    <a href="/emails" class="<?= str_starts_with($uri, 'emails') ? 'active' : '' ?>">📬 Boîte d'envoi</a>
                 <?php endif; ?>
                 <?php if ($role === 'dg'): ?>
                     <a href="/dg" class="<?= str_starts_with($uri, 'dg') ? 'active' : '' ?>">👔 Validation DG</a>

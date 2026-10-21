@@ -15,7 +15,13 @@ class Candidature extends BaseController
         $candidatures = (new CandidatureModel())->listerToutes();
         return view('candidature/index', ['candidatures' => $candidatures]);
     }
-
+    // Liste des candidats embauchés
+    public function embauches()
+    {
+        $embauches = (new CandidatureModel())->listerEmbauches();
+        return view('candidature/embauches', ['embauches' => $embauches]);
+    }
+    
     public function show($id)
     {
         $candidature = (new CandidatureModel())->trouverAvecDetails((int) $id);

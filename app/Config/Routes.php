@@ -52,9 +52,10 @@ $routes->group('annonce', ['filter' => 'auth:rh'], function ($routes) {
 });
 
 $routes->group('candidature', ['filter' => 'auth:rh'], function ($routes) {
-    $routes->get('/',                'Candidature::index');
-    $routes->get('(:num)',           'Candidature::show/$1');
-    $routes->post('(:num)/action',   'Candidature::action/$1');
+    $routes->get('/',              'Candidature::index');
+    $routes->get('embauches',      'Candidature::embauches');   // ← NOUVEAU
+    $routes->get('(:num)',         'Candidature::show/$1');
+    $routes->post('(:num)/action', 'Candidature::action/$1');
 });
 
 $routes->group('emails', ['filter' => 'auth:rh'], function ($routes) {
