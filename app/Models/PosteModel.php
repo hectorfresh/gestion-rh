@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class PosteModel extends Model
 {
-    protected $table = 'poste';
-    protected $primaryKey = 'id';
+    protected $table         = 'poste';
+    protected $primaryKey    = 'id';
     protected $allowedFields = ['libelle'];
 }

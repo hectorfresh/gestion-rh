@@ -2,344 +2,116 @@
 
 namespace App\Controllers;
 
-use App\Models\PosteModel;
 use App\Models\BesoinModel;
+use App\Models\PosteModel;
+use App\Models\StatutBesoinModel;
+use App\Models\ValidationModel;
 
 class Besoin extends BaseController
 {
-    public function formulaire()
+    // Liste des besoins du manager connecté
+    public function index()
     {
-        if (!session()->has('utilisateur')) {
-            return redirect()->to('/login');
-        }
+        $model   = new BesoinModel();
+        $besoins = $model->listerParManager(session()->get('user_id'));
 
-        $role = session()->get('utilisateur')['role_id'];
-
-        if ($role != 1 && $role != 3) {
-            return redirect()->to('/accueil');
-        }
-
-        $posteModel = new PosteModel();
-
-        return view('besoin', [
-            'postes' => $posteModel->findAll()
-        ]);
+        return view('besoin/index', ['besoins' => $besoins]);
     }
 
-    public function enregistrer()
+    // Formulaire de création
+    public function createForm()
     {
+        $postes = (new PosteModel())->orderBy('libelle', 'ASC')->findAll();
 
-        $besoinModel = new BesoinModel();
-
-        if (!session()->has('utilisateur')) {
-            return redirect()->to('/login');
-        }
-
-        $user = session()->get('utilisateur');
-
-        if ($user['role_id'] == 1) {
-            // Le DG passe directement à la création de l'annonce
-            $statutId = 6;
-        } else {
-            // Le manager attend la validation RH
-            $statutId = 1;
-        }
-
-        $besoinModel->insert([
-            'poste_id' => $this->request->getPost('poste_id'),
-            'descriptions' => $this->request->getPost('descriptions'),
-            'date_souhaitee' => $this->request->getPost('date_souhaitee'),
-            'montant_max' => $this->request->getPost('montant_max'),
-            'statut_id' => $statutId,
-            'utilisateur_id' => $user['id']
-        ]);
-
-        $id = $besoinModel->getInsertID();
-
-        db_connect()->table('historique_statut_besoin')->insert([
-            'besoin_id' => $id,
-            'statut_id' => $statutId,
-            'utilisateur_id' => $user['id']
-        ]);
-
-        return redirect()->to('/besoin')
-            ->with('message', 'Besoin enregistré.');
+        return view('besoin/create', ['postes' => $postes]);
     }
 
-    public function rh()
-    {
-        if (!session()->has('utilisateur')) {
-            return redirect()->to('/login');
-        }
+    // Enregistrement du besoin
+public function create()
+{
+    $rules = [
+        'poste_id'      => 'required|integer',
+        'nombre_postes' => 'required|integer|greater_than[0]',
+    ];
 
-        if (session()->get('utilisateur')['role_id'] != 2) {
-            return redirect()->to('/accueil');
-        }
-
-        $besoins = db_connect()
-            ->table('besoin')
-            ->select('besoin.*, poste.libelle AS poste')
-            ->join('poste', 'poste.id = besoin.poste_id')
-            ->where('besoin.statut_id', 1)
-            ->get()
-            ->getResultArray();
-
-        return view('rh_besoins', [
-            'besoins' => $besoins
-        ]);
+    if (!$this->validate($rules)) {
+        return redirect()->back()->withInput()
+                         ->with('error', 'Formulaire invalide.');
     }
 
-    public function traiterRh()
+    $poste = (new PosteModel())->find((int) $this->request->getPost('poste_id'));
+    if (!$poste) {
+        return redirect()->back()->withInput()
+                         ->with('error', 'Poste introuvable.');
+    }
+
+    $nombre = (int) $this->request->getPost('nombre_postes');
+    $cout   = $poste['salaire_max'] * $nombre;
+
+    // 🔑 Différenciation manager / DG
+    $estDG      = (session()->get('role') === 'dg');
+    $statutCode = $estDG ? 'VALIDE' : 'EN_ATTENTE_RH';
+
+    $besoinModel = new BesoinModel();
+    $besoinModel->insert([
+        'poste_id'      => $poste['id'],
+        'manager_id'    => session()->get('user_id'),
+        'nombre_postes' => $nombre,
+        'cout_engage'   => $cout,
+        'date_creation' => date('Y-m-d H:i:s'),
+        'statut_id'     => (new StatutBesoinModel())->idParCode($statutCode),
+    ]);
+
+    // Si DG → on trace une validation "DG" automatique
+    if ($estDG) {
+        $this->_enregistrerValidationDirecteDG($besoinModel->getInsertID());
+    }
+
+    $message = $estDG
+        ? 'Besoin créé et validé d\'office (DG).'
+        : 'Besoin créé. En attente de validation RH.';
+
+    return redirect()->to('/besoin')->with('success', $message);
+}
+
+// --- Méthode privée : tracer la validation d'office du DG ---
+private function _enregistrerValidationDirecteDG(int $besoin_id)
+{
+    $db = \Config\Database::connect();
+
+    $etape    = $db->table('etape_validation')->where('libelle', 'DG')->get()->getRow();
+    $decision = $db->table('decision')->where('libelle', 'Validé')->get()->getRow();
+
+    (new \App\Models\ValidationModel())->insert([
+        'besoin_id'           => $besoin_id,
+        'utilisateur_id'      => session()->get('user_id'),
+        'etape_validation_id' => $etape->id,
+        'decision_id'         => $decision->id,
+        'date_validation'     => date('Y-m-d H:i:s'),
+        'commentaire'         => 'Validation automatique : besoin créé directement par le DG.',
+    ]);
+}
+
+    // Détail d'un besoin
+    public function show($id)
     {
-        if (!session()->has('utilisateur')) {
-            return redirect()->to('/login');
-        }
-
-        $user = session()->get('utilisateur');
-
-        if ($user['role_id'] != 2) {
-            return redirect()->to('/accueil');
-        }
-
-        $id = $this->request->getPost('besoin_id');
-        $action = $this->request->getPost('action');
-
-        $besoin = db_connect()
-            ->table('besoin')
-            ->where('id', $id)
-            ->where('statut_id', 1)
-            ->get()
-            ->getRowArray();
+        $model  = new BesoinModel();
+        $besoin = $model->trouverAvecDetails((int) $id);
 
         if (!$besoin) {
-            return redirect()->to('/rh')
-                ->with('erreur', 'Besoin introuvable ou déjà traité.');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        if ($action == 'refuser') {
-            $statutId = 2;
-        } else {
-            // Chercher le budget de l'année demandée
-            $annee = date('Y', strtotime($besoin['date_souhaitee']));
-
-            $budget = db_connect()
-                ->table('finance')
-                ->join(
-                    'type_finance',
-                    'type_finance.id = finance.type_id'
-                )
-                ->where('type_finance.libelle', 'Budget recrutement')
-                ->where('finance.annee', $annee)
-                ->get()
-                ->getRowArray();
-
-            $coutAnnuel = $besoin['montant_max'] * 12;
-
-            if (!$budget || $budget['montant'] < $coutAnnuel) {
-                $statutId = 4;
-            } else {
-                // Vérifier si le créateur est le DG
-                $createur = db_connect()
-                    ->table('utilisateur')
-                    ->where('id', $besoin['utilisateur_id'])
-                    ->get()
-                    ->getRowArray();
-
-                if ($createur['role_id'] == 1) {
-                    // Le DG a déjà donné son approbation
-                    $statutId = 6;
-                } else {
-                    $statutId = 3;
-                }
-            }
+        // Un manager ne peut voir que ses propres besoins
+        if ((int) $besoin['manager_id'] !== (int) session()->get('user_id')) {
+            return redirect()->to('/besoin')->with('error', 'Accès refusé.');
         }
 
-        // Modifier le statut du besoin
-        db_connect()
-            ->table('besoin')
-            ->where('id', $id)
-            ->update(['statut_id' => $statutId]);
+        $validations = (new ValidationModel())->listerParBesoin((int) $id);
 
-        // Enregistrer le changement dans l'historique
-        db_connect()
-            ->table('historique_statut_besoin')
-            ->insert([
-                'besoin_id' => $id,
-                'statut_id' => $statutId,
-                'utilisateur_id' => $user['id']
-            ]);
-
-        return redirect()->to('/rh')
-            ->with('message', 'Besoin traité.');
-    }
-
-
-
-public function dg()
-{
-    if (!session()->has('utilisateur')) {
-        return redirect()->to('/login');
-    }
-
-    if (session()->get('utilisateur')['role_id'] != 1) {
-        return redirect()->to('/accueil');
-    }
-
-    $besoins = db_connect()
-        ->table('besoin')
-        ->select('besoin.*, poste.libelle AS poste')
-        ->join('poste', 'poste.id = besoin.poste_id')
-        ->where('besoin.statut_id', 3)
-        ->get()
-        ->getResultArray();
-
-    return view('dg_besoins', [
-        'besoins' => $besoins
-    ]);
-}
-
-public function traiterDg()
-{
-    if (!session()->has('utilisateur')) {
-        return redirect()->to('/login');
-    }
-
-    $user = session()->get('utilisateur');
-
-    if ($user['role_id'] != 1) {
-        return redirect()->to('/accueil');
-    }
-
-    $id = $this->request->getPost('besoin_id');
-    $action = $this->request->getPost('action');
-
-    $besoin = db_connect()
-        ->table('besoin')
-        ->where('id', $id)
-        ->where('statut_id', 3)
-        ->get()
-        ->getRowArray();
-
-    if (!$besoin) {
-        return redirect()->to('/dg')
-            ->with('erreur', 'Besoin introuvable ou déjà traité.');
-    }
-
-    if ($action == 'valider') {
-        $statutId = 6;
-    } else {
-        $statutId = 5;
-    }
-
-    db_connect()
-        ->table('besoin')
-        ->where('id', $id)
-        ->update(['statut_id' => $statutId]);
-
-    db_connect()
-        ->table('historique_statut_besoin')
-        ->insert([
-            'besoin_id' => $id,
-            'statut_id' => $statutId,
-            'utilisateur_id' => $user['id']
+        return view('besoin/show', [
+            'besoin'      => $besoin,
+            'validations' => $validations,
         ]);
-
-    return redirect()->to('/dg')
-        ->with('message', 'Besoin traité.');
-}
-
-
-
-
-public function annonces()
-{
-    if (!session()->has('utilisateur')) {
-        return redirect()->to('/login');
     }
-
-    if (session()->get('utilisateur')['role_id'] != 2) {
-        return redirect()->to('/accueil');
-    }
-
-    $besoins = db_connect()
-        ->table('besoin')
-        ->select('besoin.*, poste.libelle AS poste')
-        ->join('poste', 'poste.id = besoin.poste_id')
-        ->where('besoin.statut_id', 6)
-        ->get()
-        ->getResultArray();
-
-    return view('annonces', [
-        'besoins' => $besoins
-    ]);
-}
-
-public function creerAnnonce()
-{
-    if (!session()->has('utilisateur')) {
-        return redirect()->to('/login');
-    }
-
-    $user = session()->get('utilisateur');
-
-    if ($user['role_id'] != 2) {
-        return redirect()->to('/accueil');
-    }
-
-    $id = $this->request->getPost('besoin_id');
-
-    $besoin = db_connect()
-        ->table('besoin')
-        ->where('id', $id)
-        ->where('statut_id', 6)
-        ->get()
-        ->getRowArray();
-
-    if (!$besoin) {
-        return redirect()->to('/annonces')
-            ->with('erreur', 'Besoin introuvable ou déjà traité.');
-    }
-
-// Créer l'annonce
-db_connect()->table('annonce')->insert([
-    'designation' => $this->request->getPost('designation'),
-    'besoin_id' => $besoin['id']
-]);
-
-    // Terminer le circuit du besoin
-    db_connect()->table('besoin')
-        ->where('id', $id)
-        ->update(['statut_id' => 7]);
-
-    // Enregistrer l'historique
-    db_connect()->table('historique_statut_besoin')->insert([
-        'besoin_id' => $id,
-        'statut_id' => 7,
-        'utilisateur_id' => $user['id']
-    ]);
-
-    return redirect()->to('/annonces')
-        ->with('message', 'Annonce créée avec succès.');
-}
-
-
-public function listeAnnonces()
-{
-
-    $annonces = db_connect()
-        ->table('annonce')
-        ->select('annonce.*, poste.libelle AS poste, besoin.descriptions AS description_besoin')
-        ->join('besoin', 'besoin.id = annonce.besoin_id')
-        ->join('poste', 'poste.id = besoin.poste_id')
-        ->orderBy('annonce.daty', 'DESC')
-        ->get()
-        ->getResultArray();
-
-    return view('liste_annonces', [
-        'annonces' => $annonces
-    ]);
-}
-
-
-
 }

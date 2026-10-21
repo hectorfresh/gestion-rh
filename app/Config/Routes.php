@@ -2,43 +2,41 @@
 
 use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
-$routes->get('/', 'Home::index');
-$routes->get('login', 'Auth::login');
-$routes->get('logout', 'Auth::logout');
-$routes->post('connexion', 'Auth::connexion');
-$routes->get('accueil', 'Auth::accueil');
-$routes->get('besoin', 'Besoin::formulaire');
-$routes->post('besoin/enregistrer', 'Besoin::enregistrer');
+/** @var RouteCollection $routes */
 
-$routes->get('rh', 'Besoin::rh');
-$routes->post('rh/traiter', 'Besoin::traiterRh');
-$routes->get('dg', 'Besoin::dg');
-$routes->post('dg/traiter', 'Besoin::traiterDg');
-$routes->get('rh/candidatures', 'Auth::candidaturesRH');
-$routes->get('rh/candidature/(:num)', 'Auth::voirCVCandidature/$1');
+// --- Auth (accessible sans être connecté) ---
+$routes->get('/', 'Auth::index');
+$routes->get('/login', 'Auth::loginForm');
+$routes->post('/login', 'Auth::login');
+$routes->get('/logout', 'Auth::logout');
 
-$routes->post('rh/candidature/entretien/(:num)', 'Auth::retenirCandidature/$1');
-$routes->post('rh/candidature/refuser/(:num)', 'Auth::refuserCandidature/$1');
+// --- Dashboard (connecté, tous rôles) ---
+$routes->get('/dashboard', 'Dashboard::index', ['filter' => 'auth']);
 
-$routes->get('annonces', 'Besoin::annonces');
-$routes->post('annonces/creer', 'Besoin::creerAnnonce');
-$routes->get('annonces/liste', 'Besoin::listeAnnonces');
+// --- Zones par rôle (pour la suite du projet) ---
+$routes->group('besoin', ['filter' => 'auth:manager'], function ($routes) {
+    $routes->get('/',          'Besoin::index');
+    $routes->get('create',     'Besoin::createForm');
+    $routes->post('create',    'Besoin::create');
+    $routes->get('(:num)',     'Besoin::show/$1');
+});
 
-
-
-
-$routes->get('candidat/login', 'Auth::loginCandidat');
-$routes->get('candidat/inscription', 'Auth::inscriptionCandidat');
-
-$routes->post('candidat/enregistrer', 'Auth::enregistrerCandidat');
-$routes->post('candidat/connexion', 'Auth::connexionCandidat');
-$routes->post('candidat/postuler', 'Auth::postuler');
-$routes->get('candidat/cv/(:num)', 'Auth::formulaireCV/$1');
-$routes->get('candidat/candidatures', 'Auth::mesCandidatures');
+$routes->group('validation', ['filter' => 'auth:rh'], function ($routes) {
+    $routes->get('/',              'Validation::index');
+    $routes->get('(:num)',         'Validation::show/$1');
+    $routes->post('traiter/(:num)','Validation::traiter/$1');
+});
+$routes->group('dg', ['filter' => 'auth:dg'], function ($routes) {
+    $routes->get('/',               'ValidationDG::index');
+    $routes->get('(:num)',          'ValidationDG::show/$1');
+    $routes->post('traiter/(:num)', 'ValidationDG::traiter/$1');
+});
 
 
-$routes->get('candidat/accueil', 'Auth::accueilCandidat');
-$routes->get('candidat/logout', 'Auth::logoutCandidat');
+
+$routes->group('annonce', ['filter' => 'auth:rh'], function ($routes) {
+    $routes->get('/',                 'Annonce::index');
+    $routes->get('create/(:num)',     'Annonce::createForm/$1');
+    $routes->post('create',           'Annonce::create');
+    $routes->get('(:num)',            'Annonce::show/$1');
+});
