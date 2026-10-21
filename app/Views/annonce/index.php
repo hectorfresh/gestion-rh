@@ -1,62 +1,63 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
+<h2 class="mb-3">Recrutement — Annonces</h2>
 
-<h2>Recrutement — Annonces</h2>
-
-<h3>Besoins validés sans annonce</h3>
+<h4>Besoins validés à traiter</h4>
 <?php if (empty($aTraiter)): ?>
-    <p><em>Aucun besoin en attente de création d'annonce.</em></p>
+    <div class="alert alert-light border">Aucun besoin en attente.</div>
 <?php else: ?>
-    <table border="1" cellpadding="6" cellspacing="0">
-        <tr>
-            <th>#</th>
-            <th>Poste</th>
-            <th>Annonces créés</th>
-            <th>Budget engagé</th>
-            <th>Manager</th>
-            <th></th>
-        </tr>
+    <div class="card mb-4"><table class="table mb-0">
+        <thead class="table-light"><tr>
+            <th>#</th><th>Poste</th><th>Annonces</th><th>Budget</th><th>Manager</th><th></th>
+        </tr></thead>
+        <tbody>
         <?php foreach ($aTraiter as $b): ?>
             <tr>
                 <td><?= $b['id'] ?></td>
                 <td><?= esc($b['poste_libelle']) ?></td>
-                <td><?= $b['nb_annonces'] ?> / <?= $b['nombre_postes'] ?></td>
+                <td><?= $b['nb_annonces'] ?? 0 ?> / <?= $b['nombre_postes'] ?></td>
                 <td><?= number_format($b['cout_engage'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($b['manager_nom']) ?></td>
-                <td><a href="/annonce/create/<?= $b['id'] ?>">Créer l'annonce</a></td>
+                <td><a href="/annonce/create/<?= $b['id'] ?>" class="btn btn-sm btn-primary">Créer l'annonce</a></td>
             </tr>
         <?php endforeach; ?>
-    </table>
+        </tbody>
+    </table></div>
 <?php endif; ?>
 
-<hr>
-
-<h3>Annonces publiées</h3>
+<h4>Annonces publiées</h4>
 <?php if (empty($annonces)): ?>
-    <p><em>Aucune annonce publiée.</em></p>
+    <div class="alert alert-light border">Aucune annonce publiée.</div>
 <?php else: ?>
-    <table border="1" cellpadding="6" cellspacing="0">
-        <tr>
-            <th>#</th>
-            <th>Titre</th>
-            <th>Poste</th>
-            <th>Nombre</th>
-            <th>Salaire proposé</th>
-            <th>Date publication</th>
-            <th></th>
-        </tr>
+    <div class="card"><table class="table mb-0">
+        <thead class="table-light"><tr>
+            <th>#</th><th>Titre</th><th>Poste</th><th>Salaire</th><th>Publiée</th><th>Statut</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
         <?php foreach ($annonces as $a): ?>
             <tr>
                 <td><?= $a['id'] ?></td>
                 <td><?= esc($a['titre']) ?></td>
                 <td><?= esc($a['poste_libelle']) ?></td>
-                <td><?= $a['nombre_postes'] ?></td>
                 <td><?= number_format($a['salaire_propose'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($a['date_publication']) ?></td>
-                <td><a href="/annonce/<?= $a['id'] ?>">Voir</a></td>
+                <td>
+                    <?php if ($a['pourvue']): ?>
+                        <span class="badge bg-secondary">Clôturée</span>
+                    <?php else: ?>
+                        <span class="badge bg-success">Ouverte</span>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <a href="/annonce/<?= $a['id'] ?>" class="btn btn-sm btn-outline-primary">Voir</a>
+                    <?php if (!$a['pourvue']): ?>
+                        <a href="/annonce/cloturer/<?= $a['id'] ?>" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Clôturer ?');">Clôturer</a>
+                    <?php endif; ?>
+                </td>
             </tr>
         <?php endforeach; ?>
-    </table>
+        </tbody>
+    </table></div>
 <?php endif; ?>
-
 <?= $this->endSection() ?>

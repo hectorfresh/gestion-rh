@@ -1,27 +1,24 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
+<h2 class="mb-3">Besoins en attente de validation RH</h2>
 
-<h2>Besoins en attente de validation RH</h2>
-
-<p>
-    <strong>Budget total :</strong> <?= number_format($total, 0, ',', ' ') ?> Ar —
-    <strong>Engagé :</strong> <?= number_format($engage, 0, ',', ' ') ?> Ar —
-    <strong>Restant :</strong> <?= number_format($restant, 0, ',', ' ') ?> Ar
-</p>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Budget total</small>
+        <h5 class="mb-0"><?= number_format($total, 0, ',', ' ') ?> Ar</h5></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Engagé</small>
+        <h5 class="mb-0"><?= number_format($engage, 0, ',', ' ') ?> Ar</h5></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Restant</small>
+        <h5 class="mb-0 text-success"><?= number_format($restant, 0, ',', ' ') ?> Ar</h5></div></div>
+</div>
 
 <?php if (empty($besoins)): ?>
-    <p><em>Aucun besoin en attente.</em></p>
+    <div class="alert alert-light border">Aucun besoin en attente.</div>
 <?php else: ?>
-    <table border="1" cellpadding="6" cellspacing="0">
-        <tr>
-            <th>#</th>
-            <th>Poste</th>
-            <th>Nombre</th>
-            <th>Budget engagé</th>
-            <th>Manager</th>
-            <th>Date</th>
-            <th></th>
-        </tr>
+    <div class="card"><table class="table table-hover mb-0">
+        <thead class="table-light"><tr>
+            <th>#</th><th>Poste</th><th>Nombre</th><th>Budget</th><th>Manager</th><th>Date</th><th></th>
+        </tr></thead>
+        <tbody>
         <?php foreach ($besoins as $b): ?>
             <tr>
                 <td><?= $b['id'] ?></td>
@@ -30,10 +27,10 @@
                 <td><?= number_format($b['cout_engage'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($b['manager_nom']) ?></td>
                 <td><?= esc($b['date_creation']) ?></td>
-                <td><a href="/validation/<?= $b['id'] ?>">Traiter</a></td>
+                <td><a href="/validation/<?= $b['id'] ?>" class="btn btn-sm btn-primary">Traiter</a></td>
             </tr>
         <?php endforeach; ?>
-    </table>
+        </tbody>
+    </table></div>
 <?php endif; ?>
-
 <?= $this->endSection() ?>

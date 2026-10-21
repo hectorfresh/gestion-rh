@@ -220,3 +220,7 @@ CREATE TABLE valeur_cv (
     FOREIGN KEY (champ_cv_id) REFERENCES champ_cv(id),
     FOREIGN KEY (option_champ_cv_id) REFERENCES option_champ_cv(id)
 );
+
+
+
+ALTER TABLE annonce ADD COLUMN pourvue TINYINT(1) NOT NULL DEFAULT 0;

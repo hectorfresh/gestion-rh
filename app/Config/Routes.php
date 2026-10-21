@@ -49,6 +49,7 @@ $routes->group('annonce', ['filter' => 'auth:rh'], function ($routes) {
     $routes->get('create/(:num)',   'Annonce::createForm/$1');
     $routes->post('create',         'Annonce::create');
     $routes->get('(:num)',          'Annonce::show/$1');
+    $routes->get('cloturer/(:num)', 'Annonce::cloturer/$1');
 });
 
 $routes->group('candidature', ['filter' => 'auth:rh'], function ($routes) {

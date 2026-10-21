@@ -1,28 +1,48 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
 
-<h2>Bonjour <?= esc($nom) ?> 👋</h2>
-<p>Bienvenue sur l'application de gestion des besoins en personnel.</p>
-<p>Votre rôle : <strong><?= esc($role) ?></strong></p>
+<h2 class="mb-4">Bonjour <?= esc($nom) ?> 👋</h2>
 
-<h3>Que pouvez-vous faire ?</h3>
-<ul>
+<div class="row g-3">
     <?php if ($role === 'manager'): ?>
-        <li><strong>Mes besoins</strong> : créer et suivre vos demandes de personnel.</li>
+        <div class="col-md-6"><div class="card p-3">
+            <h5>📝 Mes besoins</h5>
+            <p class="text-muted mb-2">Créer et suivre vos demandes de personnel.</p>
+            <a href="/besoin" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
     <?php elseif ($role === 'rh'): ?>
-    <li><strong>Validation RH</strong> : valider ou refuser les besoins en attente.</li>
-    <li><strong>Annonces</strong> : publier les annonces de recrutement.</li>
-    <li><strong>Candidatures</strong> : traiter les candidatures reçues.</li>
-    <li><strong>Candidats embauchés</strong> : voir la liste des nouveaux embauchés.</li>
-
-
-
-
-        <?php elseif ($role === 'dg'): ?>
-        <li><strong>Mes besoins</strong> : créer un besoin → il sera <em>validé d'office</em>.</li>
-        <li><strong>Validation RH</strong> et <strong>Validation DG</strong> : traiter les besoins en attente.</li>
-        <li><strong>Annonces</strong> : publier des annonces de recrutement.</li>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>✅ Validation RH</h5>
+            <p class="text-muted mb-2">Traiter les besoins en attente.</p>
+            <a href="/validation" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>📢 Annonces</h5>
+            <p class="text-muted mb-2">Publier les annonces de recrutement.</p>
+            <a href="/annonce" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>👥 Candidatures</h5>
+            <p class="text-muted mb-2">Suivre les candidatures reçues.</p>
+            <a href="/candidature" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
+    <?php elseif ($role === 'dg'): ?>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>📝 Mes besoins</h5>
+            <p class="text-muted mb-2">Créer un besoin (validé d'office).</p>
+            <a href="/besoin" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>✅ Validation RH</h5>
+            <p class="text-muted mb-2">Traiter les besoins en attente.</p>
+            <a href="/validation" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
+        <div class="col-md-4"><div class="card p-3">
+            <h5>👔 Validation DG</h5>
+            <p class="text-muted mb-2">Décision finale sur les besoins.</p>
+            <a href="/dg" class="btn btn-primary btn-sm">Y aller</a>
+        </div></div>
     <?php endif; ?>
-</ul>
+</div>
 
 <?= $this->endSection() ?>

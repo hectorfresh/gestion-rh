@@ -135,4 +135,13 @@ public function publique($id)
             'statut_id' => $statutModel->idParCode($code),
         ]);
     }
+
+
+
+    // Clôturer une annonce manuellement
+public function cloturer($id)
+{
+    (new \App\Models\AnnonceModel())->marquerPourvue((int) $id);
+    return redirect()->to('/annonce')->with('success', 'Annonce clôturée.');
+}
 }

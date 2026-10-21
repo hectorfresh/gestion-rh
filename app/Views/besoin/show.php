@@ -1,39 +1,32 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
+<h2 class="mb-4">Besoin #<?= $besoin['id'] ?></h2>
 
-<h2>Besoin #<?= $besoin['id'] ?></h2>
+<div class="card p-4 mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Poste :</strong> <?= esc($besoin['poste_libelle']) ?></p>
+            <p><strong>Nombre :</strong> <?= $besoin['nombre_postes'] ?></p>
+            <p><strong>Budget engagé :</strong> <?= number_format($besoin['cout_engage'], 0, ',', ' ') ?> Ar</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Manager :</strong> <?= esc($besoin['manager_nom']) ?></p>
+            <p><strong>Date :</strong> <?= esc($besoin['date_creation']) ?></p>
+            <p><strong>Statut :</strong>
+                <span class="badge badge-statut statut-<?= strtolower($besoin['statut_code']) ?>">
+                    <?= esc($besoin['statut_libelle']) ?></span>
+            </p>
+        </div>
+    </div>
+</div>
 
-<?php if ($besoin['statut_code'] === 'VALIDE'
-          && session()->get('role') === 'dg'
-          && (int) $besoin['manager_id'] === (int) session()->get('user_id')): ?>
-    <p style="background:#eef; padding:8px;">
-        ℹ️ Ce besoin a été <strong>validé d'office</strong> lors de sa création par le DG.
-        Il n'est plus modifiable.
-    </p>
-<?php endif; ?>
-
-
-
-
-<p><strong>Poste :</strong> <?= esc($besoin['poste_libelle']) ?></p>
-<p><strong>Nombre de postes :</strong> <?= $besoin['nombre_postes'] ?></p>
-<p><strong>Budget engagé (max) :</strong> <?= number_format($besoin['cout_engage'], 2, ',', ' ') ?> Ar</p>
-<p><strong>Date de création :</strong> <?= esc($besoin['date_creation']) ?></p>
-<p><strong>Statut actuel :</strong> <?= esc($besoin['statut_libelle']) ?></p>
-<p><strong>Manager :</strong> <?= esc($besoin['manager_nom']) ?></p>
-
-<h3>Historique des validations</h3>
+<h4>Historique des validations</h4>
 <?php if (empty($validations)): ?>
-    <p><em>Aucune validation pour le moment.</em></p>
+    <div class="alert alert-light border">Aucune validation pour le moment.</div>
 <?php else: ?>
-    <table border="1" cellpadding="6" cellspacing="0">
-        <tr>
-            <th>Étape</th>
-            <th>Décision</th>
-            <th>Par</th>
-            <th>Date</th>
-            <th>Commentaire</th>
-        </tr>
+    <div class="card"><table class="table mb-0">
+        <thead class="table-light"><tr><th>Étape</th><th>Décision</th><th>Par</th><th>Date</th><th>Commentaire</th></tr></thead>
+        <tbody>
         <?php foreach ($validations as $v): ?>
             <tr>
                 <td><?= esc($v['etape_libelle']) ?></td>
@@ -43,9 +36,9 @@
                 <td><?= esc($v['commentaire'] ?? '') ?></td>
             </tr>
         <?php endforeach; ?>
-    </table>
+        </tbody>
+    </table></div>
 <?php endif; ?>
 
-<p><a href="/besoin">← Retour à la liste</a></p>
-
+<a href="/besoin" class="btn btn-outline-secondary mt-3">← Retour</a>
 <?= $this->endSection() ?>

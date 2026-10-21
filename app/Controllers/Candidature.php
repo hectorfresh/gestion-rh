@@ -21,7 +21,7 @@ class Candidature extends BaseController
         $embauches = (new CandidatureModel())->listerEmbauches();
         return view('candidature/embauches', ['embauches' => $embauches]);
     }
-    
+
     public function show($id)
     {
         $candidature = (new CandidatureModel())->trouverAvecDetails((int) $id);
@@ -107,52 +107,97 @@ class Candidature extends BaseController
         }
 
         // ============ SALAIRE_EN_NEGOCIATION ============
-        if ($statut === 'SALAIRE_EN_NEGOCIATION') {
-            if ($action === 'accepter_nego') {
-                $db = \Config\Database::connect();
-                $poste = $db->table('poste')
-                            ->join('besoin', 'besoin.poste_id = poste.id')
-                            ->join('annonce', 'annonce.besoin_id = besoin.id')
-                            ->where('annonce.id', $candidature['annonce_id'])
-                            ->get()->getRow();
+        // ============ SALAIRE_EN_NEGOCIATION ============
+if ($statut === 'SALAIRE_EN_NEGOCIATION') {
+    // Récupérer la fourchette salariale du poste
+    $db = \Config\Database::connect();
+    $poste = $db->table('poste')
+                ->join('besoin', 'besoin.poste_id = poste.id')
+                ->join('annonce', 'annonce.besoin_id = besoin.id')
+                ->where('annonce.id', $candidature['annonce_id'])
+                ->get()->getRow();
 
-                if ($candidature['salaire_negocie'] > $poste->salaire_max) {
-                    return redirect()->to("/candidature/$id")
-                                     ->with('error', 'Négociation refusée : salaire demandé ('
-                                         . number_format($candidature['salaire_negocie'], 0, ',', ' ')
-                                         . ' Ar) supérieur au salaire maximum du poste ('
-                                         . number_format($poste->salaire_max, 0, ',', ' ') . ' Ar).');
-                }
-
-                (new CandidatureModel())->update($id, [
-                    'salaire_final' => $candidature['salaire_negocie'],
-                ]);
-                $this->_changerStatut($id, 'CONDITIONS_PROPOSEES');
-
-                envoyer_email($email, 'Nouvelle proposition de salaire',
-                    "Bonjour $prenom,\n\nNous avons accepté votre demande de négociation.\n"
-                    . "Salaire proposé : {$candidature['salaire_negocie']} Ar.\n"
-                    . "Connectez-vous pour accepter ou refuser cette nouvelle proposition.");
-                return redirect()->to("/candidature/$id")
-                                 ->with('success', 'Négociation acceptée. Le candidat doit valider la nouvelle proposition.');
-            }
-            if ($action === 'refuser_nego') {
-                $this->_changerStatut($id, 'CANDIDAT_NON_RETENU');
-                envoyer_email($email, 'Négociation refusée',
-                    "Bonjour $prenom,\n\nVotre demande de salaire n'a pas pu être acceptée.\n\nCordialement.");
-                return redirect()->to("/candidature/$id")->with('success', 'Négociation refusée.');
-            }
+    if ($action === 'accepter_nego') {
+        if ($candidature['salaire_negocie'] > $poste->salaire_max) {
+            return redirect()->to("/candidature/$id")
+                             ->with('error', 'Salaire demandé ('
+                                 . number_format($candidature['salaire_negocie'], 0, ',', ' ')
+                                 . ' Ar) supérieur au maximum autorisé ('
+                                 . number_format($poste->salaire_max, 0, ',', ' ')
+                                 . ' Ar). Utilisez "Proposer le salaire max".');
         }
+
+        (new CandidatureModel())->update($id, [
+            'salaire_final' => $candidature['salaire_negocie'],
+        ]);
+        $this->_changerStatut($id, 'CONDITIONS_PROPOSEES');
+
+        envoyer_email($email, 'Nouvelle proposition de salaire',
+            "Bonjour $prenom,\n\nNous avons accepté votre demande de négociation.\n"
+            . "Salaire proposé : {$candidature['salaire_negocie']} Ar.\n"
+            . "Connectez-vous pour accepter ou refuser cette nouvelle proposition.");
+        return redirect()->to("/candidature/$id")
+                         ->with('success', 'Négociation acceptée. Le candidat doit valider.');
+    }
+
+    if ($action === 'proposer_max') {
+        // Contre-proposition : le salaire maximum autorisé
+        (new CandidatureModel())->update($id, [
+            'salaire_final' => $poste->salaire_max,
+        ]);
+        $this->_changerStatut($id, 'CONDITIONS_PROPOSEES');
+
+        envoyer_email($email, 'Nouvelle proposition de salaire',
+            "Bonjour $prenom,\n\nAprès étude, nous ne pouvons pas accéder à votre demande.\n"
+            . "Nous vous proposons le salaire maximum du poste : {$poste->salaire_max} Ar.\n"
+            . "Connectez-vous pour accepter ou refuser cette proposition finale.");
+        return redirect()->to("/candidature/$id")
+                         ->with('success', 'Salaire max proposé au candidat. En attente de sa réponse.');
+    }
+
+    if ($action === 'refuser_nego') {
+        $this->_changerStatut($id, 'CANDIDAT_NON_RETENU');
+        envoyer_email($email, 'Négociation refusée',
+            "Bonjour $prenom,\n\nVotre demande de salaire n'a pas pu être acceptée.\n\nCordialement.");
+        return redirect()->to("/candidature/$id")->with('success', 'Négociation refusée.');
+    }
+}
+
+
+// ============ CONDITIONS_REFUSEES (le candidat a refusé la contre-proposition) ============
+if ($statut === 'CONDITIONS_REFUSEES') {
+    if ($action === 'cloturer') {
+        $this->_changerStatut($id, 'CANDIDAT_NON_RETENU');
+        envoyer_email($email, 'Candidature clôturée',
+            "Bonjour $prenom,\n\nVotre candidature est clôturée suite au refus de la proposition.\n\nCordialement.");
+        return redirect()->to("/candidature/$id")->with('success', 'Candidature clôturée.');
+    }
+    if ($action === 'reproposer') {
+        // Permettre au RH de re-proposer les conditions initiales
+        (new CandidatureModel())->update($id, ['salaire_final' => null]);
+        $this->_changerStatut($id, 'CONDITIONS_PROPOSEES');
+        envoyer_email($email, 'Nouvelle proposition',
+            "Bonjour $prenom,\n\nNous revenons vers vous avec une nouvelle proposition.\n"
+            . "Connectez-vous pour la consulter.");
+        return redirect()->to("/candidature/$id")
+                         ->with('success', 'Nouvelle proposition envoyée au candidat.');
+    }
+}
+
 
         // ============ CONDITIONS_ACCEPTEES → établir contrat ============
-        if ($statut === 'CONDITIONS_ACCEPTEES' && $action === 'etablir_contrat') {
-            $salaireSaisi = (float) $this->request->getPost('salaire');
-            $this->_creerContrat($id, $salaireSaisi);
-            $this->_changerStatut($id, 'CANDIDAT_EMBAUCHE');
-            envoyer_email($email, 'Félicitations, contrat établi',
-                "Bonjour $prenom,\n\nFélicitations ! Votre contrat est établi.\nBienvenue dans l'équipe.");
-            return redirect()->to("/candidature/$id")->with('success', 'Contrat établi. Candidat embauché !');
-        }
+if ($statut === 'CONDITIONS_ACCEPTEES' && $action === 'etablir_contrat') {
+    $salaireSaisi = (float) $this->request->getPost('salaire');
+    $this->_creerContrat($id, $salaireSaisi);
+    $this->_changerStatut($id, 'CANDIDAT_EMBAUCHE');
+
+    // Clôturer l'annonce (1 annonce = 1 poste = pourvue dès qu'1 candidat est embauché)
+    (new \App\Models\AnnonceModel())->marquerPourvue((int) $candidature['annonce_id']);
+
+    envoyer_email($email, 'Félicitations, contrat établi',
+        "Bonjour $prenom,\n\nFélicitations ! Votre contrat est établi.\nBienvenue dans l'équipe.");
+    return redirect()->to("/candidature/$id")->with('success', 'Contrat établi. Annonce clôturée.');
+}
 
         // Si on arrive ici, aucun cas n'a matché
         return redirect()->to("/candidature/$id")

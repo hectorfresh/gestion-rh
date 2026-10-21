@@ -1,21 +1,24 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
-<h2>📬 Boîte d'envoi (emails simulés)</h2>
-<p><em>Tous les emails que l'application aurait envoyés.</em></p>
+<h2 class="mb-3">📬 Boîte d'envoi (emails simulés)</h2>
+<p class="text-muted small">Tous les emails que l'application aurait envoyés.</p>
+
 <?php if (empty($emails)): ?>
-    <p><em>Aucun email pour le moment.</em></p>
+    <div class="alert alert-light border">Aucun email.</div>
 <?php else: ?>
-    <table>
-        <tr><th>#</th><th>Destinataire</th><th>Sujet</th><th>Date</th><th></th></tr>
+    <div class="card"><table class="table table-hover mb-0">
+        <thead class="table-light"><tr><th>#</th><th>Destinataire</th><th>Sujet</th><th>Date</th><th></th></tr></thead>
+        <tbody>
         <?php foreach ($emails as $e): ?>
             <tr>
                 <td><?= $e['id'] ?></td>
                 <td><?= esc($e['destinataire']) ?></td>
                 <td><?= esc($e['sujet']) ?></td>
                 <td><?= esc($e['date_envoi']) ?></td>
-                <td><a href="/emails/<?= $e['id'] ?>">Voir</a></td>
+                <td><a href="/emails/<?= $e['id'] ?>" class="btn btn-sm btn-outline-primary">Voir</a></td>
             </tr>
         <?php endforeach; ?>
-    </table>
+        </tbody>
+    </table></div>
 <?php endif; ?>
 <?= $this->endSection() ?>
