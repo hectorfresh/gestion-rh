@@ -1,26 +1,4 @@
 
-L'objectif de cette application est de faire une application 
-
-===========BESOIN==============================
-On a un manager, rh, dg  .
-Un manager fait une demande de besoin : exemple : developpeur , 
-ensuite le rh le valide ou non , ensuite si le budget (reservé pour Tous les personnels  : budget restant ) est suffisant alors il sera valide par la finance 
-ensuite le dg valide ou non le besoin  : -si le besoin est valide alors on revient au rh et il y a une ouverture de recrutement (creation d'annonce ) . 
-
-
-
-
-=======Recrutement et Candidature ========================
-On va permettre aux candidat de postuler pour une annonce puis le candidat remplit son cv (c'est un cv guidée ) . 
-Je ne sais pas si un candidat doit créer un compte ou pas pour postuler . Qu'est ce que tu recommandes ? 
-
-
-
-
-
-
-
-
 
 
 
