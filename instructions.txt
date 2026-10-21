@@ -10,6 +10,14 @@ ensuite le dg valide ou non le besoin  : -si le besoin est valide alors on revie
 
 
 
+=======Recrutement et Candidature ========================
+On va permettre aux candidat de postuler pour une annonce puis le candidat remplit son cv (c'est un cv guidée ) . 
+Je ne sais pas si un candidat doit créer un compte ou pas pour postuler . Qu'est ce que tu recommandes ? 
+
+
+
+
+
 
 
 

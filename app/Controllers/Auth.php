@@ -7,13 +7,12 @@ use App\Models\UtilisateurModel;
 class Auth extends BaseController
 {
     // Page d'accueil : redirige selon état de connexion
-    public function index()
-    {
-        if (session()->get('user_id')) {
-            return redirect()->to('/dashboard');
-        }
-        return redirect()->to('/login');
-    }
+public function index()
+{
+    if (session()->get('user_id'))     return redirect()->to('/dashboard');
+    if (session()->get('candidat_id')) return redirect()->to('/candidat/dashboard');
+    return redirect()->to('/annonces');
+}
 
     // Affiche le formulaire de login
     public function loginForm()

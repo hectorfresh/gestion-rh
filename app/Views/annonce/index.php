@@ -11,7 +11,7 @@
         <tr>
             <th>#</th>
             <th>Poste</th>
-            <th>Nombre</th>
+            <th>Annonces créés</th>
             <th>Budget engagé</th>
             <th>Manager</th>
             <th></th>
@@ -20,7 +20,7 @@
             <tr>
                 <td><?= $b['id'] ?></td>
                 <td><?= esc($b['poste_libelle']) ?></td>
-                <td><?= $b['nombre_postes'] ?></td>
+                <td><?= $b['nb_annonces'] ?> / <?= $b['nombre_postes'] ?></td>
                 <td><?= number_format($b['cout_engage'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($b['manager_nom']) ?></td>
                 <td><a href="/annonce/create/<?= $b['id'] ?>">Créer l'annonce</a></td>
@@ -51,10 +51,7 @@
                 <td><?= esc($a['titre']) ?></td>
                 <td><?= esc($a['poste_libelle']) ?></td>
                 <td><?= $a['nombre_postes'] ?></td>
-                <td>
-                    <?= number_format($a['salaire_min'], 0, ',', ' ') ?>
-                    à <?= number_format($a['salaire_max'], 0, ',', ' ') ?> Ar
-                </td>
+                <td><?= number_format($a['salaire_propose'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($a['date_publication']) ?></td>
                 <td><a href="/annonce/<?= $a['id'] ?>">Voir</a></td>
             </tr>
