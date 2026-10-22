@@ -307,30 +307,61 @@
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
             <input type="hidden" name="action" value="etablir_contrat">
             <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Type de contrat</label>
-                <select name="type_contrat" class="form-select" required>
+            <div class="col-md-3">
+                <label class="form-label">Type de contrat</label>
+                <select name="type_contrat" id="type_contrat" class="form-select" required>
                     <?php foreach ($types as $t): ?>
                         <option value="<?= esc($t['libelle']) ?>"><?= esc($t['libelle']) ?></option>
                     <?php endforeach; ?>
-                </select>            
-                </div>
-                
-                <div class="col-md-3">
-                    <label class="form-label">Salaire (Ar)</label>
-                    <input type="number" name="salaire" step="0.01" min="0"
-                           value="<?= $salaireDefaut ?>" class="form-control" required>
-                    <small class="text-muted">Salaire accepté par le candidat</small>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date début</label>
-                    <input type="date" name="date_debut" class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date fin (optionnel)</label>
-                    <input type="date" name="date_fin" class="form-control">
-                </div>
+                </select>
             </div>
+            <div class="col-md-3">
+                <label class="form-label">Salaire (Ar)</label>
+                <input type="number" name="salaire" step="0.01" min="0"
+                    value="<?= $salaireDefaut ?>" class="form-control" required>
+                <small class="text-muted">Salaire accepté par le candidat</small>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date début</label>
+                <input type="date" name="date_debut" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" id="label-date-fin">Date fin (optionnel)</label>
+                <input type="date" name="date_fin" id="date_fin" class="form-control">
+            </div>
+
+            <script>
+                // Adapte le champ "Date fin" selon le type de contrat choisi
+                (function () {
+                    const select  = document.getElementById('type_contrat');
+                    const input   = document.getElementById('date_fin');
+                    const label   = document.getElementById('label-date-fin');
+
+                    function ajuster() {
+                        if (select.value === 'CDI') {
+                            input.required = false;
+                            input.value = '';
+                            label.textContent = 'Date fin (optionnel — non applicable au CDI)';
+                            input.disabled = true;
+                        } else if (select.value === 'CDD') {
+                            input.required = true;
+                            label.textContent = 'Date fin (obligatoire pour un CDD)';
+                            input.disabled = false;
+                        } else { // Essai
+                            input.required = true;
+                            label.textContent = 'Date fin (obligatoire pour un essai)';
+                            input.disabled = false;
+                        }
+                    }
+
+                    select.addEventListener('change', ajuster);
+                    ajuster(); // au chargement
+                })();
+            </script>
+
+
+            </div>
+            
             <button type="submit" class="btn btn-success mt-3">✓ Établir le contrat</button>
         </form>
     </div>
