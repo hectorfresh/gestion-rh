@@ -18,7 +18,11 @@
                 <td><?= $b['nb_annonces'] ?? 0 ?> / <?= $b['nombre_postes'] ?></td>
                 <td><?= number_format($b['cout_engage'], 0, ',', ' ') ?> Ar</td>
                 <td><?= esc($b['manager_nom']) ?></td>
-                <td><a href="/annonce/create/<?= $b['id'] ?>" class="btn btn-sm btn-primary">Créer l'annonce</a></td>
+          <td>
+    <a href="/annonce/create/<?= $b['id'] ?>" class="btn btn-sm btn-primary">
+        Créer <?= (int) ($b['nombre_postes'] - ($b['nb_annonces'] ?? 0)) ?> annonce(s)
+    </a>
+</td>
             </tr>
         <?php endforeach; ?>
         </tbody>

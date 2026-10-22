@@ -309,12 +309,13 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Type de contrat</label>
-                    <select name="type_contrat" class="form-select" required>
-                        <?php foreach ($types as $t): if ($t['libelle'] === 'CDD') continue; ?>
-                            <option value="<?= esc($t['libelle']) ?>"><?= esc($t['libelle']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <select name="type_contrat" class="form-select" required>
+                    <?php foreach ($types as $t): ?>
+                        <option value="<?= esc($t['libelle']) ?>"><?= esc($t['libelle']) ?></option>
+                    <?php endforeach; ?>
+                </select>            
                 </div>
+                
                 <div class="col-md-3">
                     <label class="form-label">Salaire (Ar)</label>
                     <input type="number" name="salaire" step="0.01" min="0"

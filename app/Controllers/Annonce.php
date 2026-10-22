@@ -36,83 +36,103 @@ public function publique($id)
 
     // Formulaire de création à partir d'un besoin
     public function createForm($besoin_id)
-    {
-        $besoin = (new BesoinModel())->trouverAvecDetails((int) $besoin_id);
-        if (!$besoin) {
-            return redirect()->to('/annonce')->with('error', 'Besoin introuvable.');
-        }
-
-        // Vérifier le nombre d'annonces existantes
-        $db = \Config\Database::connect();
-        $nbAnnonces = $db->table('annonce')->where('besoin_id', (int) $besoin_id)->countAllResults();
-
-        if ($nbAnnonces >= (int) $besoin['nombre_postes']) {
-            return redirect()->to('/annonce')
-                            ->with('error', 'Toutes les annonces de ce besoin sont déjà créées.');
-        }
-
-        $poste = $db->table('poste')->where('id', $besoin['poste_id'])->get()->getRow();
-
-        return view('annonce/create', [
-            'besoin'     => $besoin,
-            'poste'      => $poste,
-            'nbAnnonces' => $nbAnnonces,
-        ]);
+{
+    $besoin = (new BesoinModel())->trouverAvecDetails((int) $besoin_id);
+    if (!$besoin) {
+        return redirect()->to('/annonce')->with('error', 'Besoin introuvable.');
     }
 
-    public function create()
-    {
-        $besoin_id = (int) $this->request->getPost('besoin_id');
-        $besoin    = (new BesoinModel())->trouverAvecDetails($besoin_id);
+    $db = \Config\Database::connect();
+    $nbAnnonces  = $db->table('annonce')->where('besoin_id', (int) $besoin_id)->countAllResults();
+    $nbRestantes = (int) $besoin['nombre_postes'] - $nbAnnonces;
 
-        if (!$besoin) {
-            return redirect()->to('/annonce')->with('error', 'Besoin introuvable.');
-        }
+    if ($nbRestantes <= 0) {
+        return redirect()->to('/annonce')
+                         ->with('error', 'Toutes les annonces de ce besoin sont déjà créées.');
+    }
 
-        // Vérifier qu'il reste des annonces à créer
-        $db = \Config\Database::connect();
-        $nbAnnonces = $db->table('annonce')->where('besoin_id', $besoin_id)->countAllResults();
-        if ($nbAnnonces >= (int) $besoin['nombre_postes']) {
-            return redirect()->to('/annonce')
-                            ->with('error', 'Toutes les annonces de ce besoin sont déjà créées.');
-        }
+    $poste = $db->table('poste')->where('id', $besoin['poste_id'])->get()->getRow();
 
-        $rules = [
-            'titre'           => 'required|max_length[200]',
-            'description'     => 'required',
-            'salaire_propose' => 'required|numeric|greater_than[0]',
-            'heure_debut'     => 'required',
-        ];
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Formulaire invalide.');
-        }
+    return view('annonce/create', [
+        'besoin'      => $besoin,
+        'poste'       => $poste,
+        'nbAnnonces'  => $nbAnnonces,
+        'nbRestantes' => $nbRestantes,
+    ]);
+}
 
-        $poste   = $db->table('poste')->where('id', $besoin['poste_id'])->get()->getRow();
-        $salaire = (float) $this->request->getPost('salaire_propose');
-        if ($salaire < $poste->salaire_min || $salaire > $poste->salaire_max) {
-            return redirect()->back()->withInput()
-                            ->with('error', "Salaire hors fourchette ({$poste->salaire_min} - {$poste->salaire_max}).");
-        }
+public function create()
+{
+    $besoin_id = (int) $this->request->getPost('besoin_id');
+    $besoin    = (new BesoinModel())->trouverAvecDetails($besoin_id);
 
-        (new \App\Models\AnnonceModel())->insert([
+    if (!$besoin) {
+        return redirect()->to('/annonce')->with('error', 'Besoin introuvable.');
+    }
+
+    $db = \Config\Database::connect();
+    $nbAnnonces  = $db->table('annonce')->where('besoin_id', $besoin_id)->countAllResults();
+    $nbRestantes = (int) $besoin['nombre_postes'] - $nbAnnonces;
+
+    if ($nbRestantes <= 0) {
+        return redirect()->to('/annonce')
+                         ->with('error', 'Toutes les annonces de ce besoin sont déjà créées.');
+    }
+
+    // Validation
+    $rules = [
+        'titre'           => 'required|max_length[200]',
+        'description'     => 'required',
+        'salaire_propose' => 'required|numeric|greater_than[0]',
+        'heure_debut'     => 'required',
+    ];
+    if (!$this->validate($rules)) {
+        return redirect()->back()->withInput()->with('error', 'Formulaire invalide.');
+    }
+
+    // Vérification de la fourchette salariale
+    $poste   = $db->table('poste')->where('id', $besoin['poste_id'])->get()->getRow();
+    $salaire = (float) $this->request->getPost('salaire_propose');
+    if ($salaire < $poste->salaire_min || $salaire > $poste->salaire_max) {
+        return redirect()->back()->withInput()
+                         ->with('error', "Salaire hors fourchette ({$poste->salaire_min} - {$poste->salaire_max}).");
+    }
+
+    // Création des N annonces (une par poste manquant)
+    $titreBase    = $this->request->getPost('titre');
+    $annonceModel = new \App\Models\AnnonceModel();
+
+    for ($i = 1; $i <= $nbRestantes; $i++) {
+        // Suffixe le titre pour différencier les annonces (1/2), (2/2)...
+        $titre = ($nbRestantes > 1)
+            ? "{$titreBase} (" . ($nbAnnonces + $i) . "/{$besoin['nombre_postes']})"
+            : $titreBase;
+
+        $annonceModel->insert([
             'besoin_id'         => $besoin_id,
             'rh_id'             => session()->get('user_id'),
-            'titre'             => $this->request->getPost('titre'),
+            'titre'             => $titre,
             'description'       => $this->request->getPost('description'),
             'salaire_propose'   => $salaire,
             'heure_debut'       => $this->request->getPost('heure_debut'),
             'autres_conditions' => $this->request->getPost('autres_conditions') ?: null,
             'date_publication'  => date('Y-m-d H:i:s'),
+            'pourvue'           => 0,
         ]);
-
-        // Mise à jour du statut du besoin : OUVERT si N annonces = N postes
-        $nbApres = $db->table('annonce')->where('besoin_id', $besoin_id)->countAllResults();
-        $statutModel = new \App\Models\StatutBesoinModel();
-        $code = ($nbApres >= (int) $besoin['nombre_postes']) ? 'RECRUTEMENT_OUVERT' : 'VALIDE';
-        (new BesoinModel())->update($besoin_id, ['statut_id' => $statutModel->idParCode($code)]);
-
-        return redirect()->to('/annonce')->with('success', 'Annonce publiée.');
     }
+
+    // Mise à jour du statut du besoin
+    $nbApres     = $db->table('annonce')->where('besoin_id', $besoin_id)->countAllResults();
+    $statutModel = new \App\Models\StatutBesoinModel();
+    $code        = ($nbApres >= (int) $besoin['nombre_postes']) ? 'RECRUTEMENT_OUVERT' : 'VALIDE';
+    (new BesoinModel())->update($besoin_id, ['statut_id' => $statutModel->idParCode($code)]);
+
+    $message = ($nbRestantes > 1)
+        ? "{$nbRestantes} annonces publiées pour ce besoin."
+        : "Annonce publiée.";
+
+    return redirect()->to('/annonce')->with('success', $message);
+}
 
 
 // Détail d'une annonce
