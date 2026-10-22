@@ -12,7 +12,7 @@
 <section class="content-card mb-4">
     <div class="content-card-header">
         <div>
-            <h2 class="content-card-title">📝 Description du poste</h2>
+            <h2 class="content-card-title"><i class="bi bi-pencil-square me-1"></i> Description du poste</h2>
         </div>
     </div>
     <div class="content-card-body">
@@ -24,7 +24,7 @@
 <section class="content-card mb-4">
     <div class="content-card-header">
         <div>
-            <h2 class="content-card-title">📋 Autres conditions</h2>
+            <h2 class="content-card-title"><i class="bi bi-clipboard me-1"></i> Autres conditions</h2>
         </div>
     </div>
     <div class="content-card-body">
@@ -42,15 +42,15 @@
     <div class="content-card-body">
         <div class="row g-3">
             <div class="col-md-4">
-                <p class="text-muted small mb-1">💰 Salaire proposé</p>
+                <p class="text-muted small mb-1"><i class="bi bi-cash me-1"></i> Salaire proposé</p>
                 <h4 class="mb-0 text-success"><?= number_format($annonce['salaire_propose'], 0, ',', ' ') ?> Ar</h4>
             </div>
             <div class="col-md-4">
-                <p class="text-muted small mb-1">🕐 Heure de début</p>
+                <p class="text-muted small mb-1"><i class="bi bi-clock me-1"></i> Heure de début</p>
                 <h5 class="mb-0"><?= substr($annonce['heure_debut'], 0, 5) ?></h5>
             </div>
             <div class="col-md-4">
-                <p class="text-muted small mb-1">📅 Publiée le</p>
+                <p class="text-muted small mb-1"><i class="bi bi-calendar me-1"></i> Publiée le</p>
                 <h5 class="mb-0"><?= date('d/m/Y', strtotime($annonce['date_publication'])) ?></h5>
             </div>
         </div>

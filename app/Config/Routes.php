@@ -59,6 +59,19 @@ $routes->group('candidature', ['filter' => 'auth:rh'], function ($routes) {
     $routes->post('(:num)/action', 'Candidature::action/$1');
 });
 
+$routes->group('recrutement', ['filter' => 'auth:rh'], function ($routes) {
+    $routes->post('candidature/(:num)/entretien', 'Recrutement::planifierEntretien/$1');
+    $routes->post('entretien/(:num)/evaluation', 'Recrutement::evaluerEntretien/$1');
+    $routes->post('onboarding/(:num)/tache', 'Recrutement::ajouterTacheOnboarding/$1');
+});
+
+$routes->group('validation-salaire', ['filter' => 'auth:dg'], function ($routes) {
+    $routes->get('dg', 'ValidationSalaire::dg');
+    $routes->post('dg/(:num)', 'ValidationSalaire::traiter/$1');
+});
+
+$routes->get('validation-salaire/validees', 'ValidationSalaire::validees', ['filter' => 'auth:rh,dg']);
+
 $routes->group('emails', ['filter' => 'auth:rh'], function ($routes) {
     $routes->get('/',       'Emails::index');
     $routes->get('(:num)',  'Emails::show/$1');

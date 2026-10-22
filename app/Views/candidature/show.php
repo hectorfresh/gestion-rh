@@ -19,6 +19,26 @@
             <h4 class="mb-1"><?= esc($candidature['annonce_titre']) ?></h4>
             <p class="text-muted mb-0"><?= esc($candidature['poste_libelle']) ?></p>
         </div>
+
+        <?php $reponses = (new \App\Models\ReponseCvModel())->listerParCandidature((int) $candidature['id']); ?>
+        <?php if (!empty($reponses)): ?>
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3"><i class="bi bi-check2-square me-1"></i> Questionnaire Oui / Non</h4>
+            <?php foreach ($reponses as $reponse): ?>
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span><?= esc($reponse['libelle']) ?></span>
+                    <strong class="<?= (int) $reponse['valeur'] === 1 ? 'text-success' : 'text-danger' ?>">
+                        <?= (int) $reponse['valeur'] === 1 ? 'Oui' : 'Non' ?>
+                    </strong>
+                </div>
+            <?php endforeach; ?>
+            <?php if ($candidature['statut_code'] === 'REPONSES_A_VERIFIER'): ?>
+                <div class="alert alert-warning mt-3 mb-0">
+                    Le candidat a répondu Non à au moins une question. Vérifiez son dossier avant de proposer un essai ou les conditions.
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
         <div class="col-md-4 text-md-end">
             <span class="badge badge-statut statut-<?= strtolower($candidature['statut_code']) ?> fs-6">
                 <?= esc($candidature['statut_libelle']) ?>
@@ -30,7 +50,7 @@
 
 <!-- ==================== CV DU CANDIDAT ==================== -->
 <div class="card p-4 mb-4">
-    <h4 class="mb-3">👤 CV du candidat</h4>
+    <h4 class="mb-3"><i class="bi bi-person me-1"></i> CV du candidat</h4>
     <div class="row mb-3">
         <div class="col-md-4">
             <p class="mb-1"><strong>Nom :</strong> <?= esc($candidature['candidat_prenom'] . ' ' . $candidature['candidat_nom']) ?></p>
@@ -69,9 +89,77 @@
     <?php endif; ?>
 </div>
 
+<!-- ==================== ENTRETIENS ET EVALUATIONS ==================== -->
+<div class="card p-4 mb-4">
+    <h4 class="mb-3"><i class="bi bi-calendar-event me-1"></i> Entretiens et évaluations</h4>
+    <?php
+    $entretiens = (new \App\Models\EntretienModel())->pourCandidature((int) $candidature['id']);
+    ?>
+    <?php if (empty($entretiens)): ?>
+        <p class="text-muted">Aucun entretien planifié.</p>
+    <?php else: ?>
+        <?php foreach ($entretiens as $entretien): ?>
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <strong><?= esc($entretien['type']) ?></strong>
+                    <span class="badge bg-secondary"><?= esc($entretien['statut']) ?></span>
+                </div>
+                <p class="small text-muted mb-2"><?= esc($entretien['date_entretien']) ?></p>
+                <?php $evaluations = (new \App\Models\EvaluationModel())->pourEntretien((int) $entretien['id']); ?>
+                <?php foreach ($evaluations as $evaluation): ?>
+                    <p class="mb-1">
+                        Note : <strong><?= esc($evaluation['note']) ?>/20</strong> —
+                        <?= esc($evaluation['decision']) ?>
+                    </p>
+                    <?php if ($evaluation['commentaire']): ?>
+                        <p class="small mb-0"><?= nl2br(esc($evaluation['commentaire'])) ?></p>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <form method="post" action="/recrutement/entretien/<?= $entretien['id'] ?>/evaluation" class="row g-2 mt-2">
+                    <div class="col-md-2"><input type="number" name="note" min="0" max="20" step="0.01" class="form-control" placeholder="Note" required></div>
+                    <div class="col-md-3">
+                        <select name="decision" class="form-select" required>
+                            <option value="RETENU">Retenu</option>
+                            <option value="NON_RETENU">Non retenu</option>
+                            <option value="A_REVOIR">À revoir</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5"><input type="text" name="commentaire" class="form-control" placeholder="Commentaire"></div>
+                    <div class="col-md-2"><button class="btn btn-outline-primary w-100">Évaluer</button></div>
+                </form>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" action="/recrutement/candidature/<?= $candidature['id'] ?>/entretien" class="row g-2">
+        <div class="col-md-4"><input type="datetime-local" name="date_entretien" class="form-control" required></div>
+        <div class="col-md-3"><input type="text" name="type" maxlength="30" class="form-control" placeholder="Type d'entretien" required></div>
+        <div class="col-md-3"><button class="btn btn-primary">Planifier l'entretien</button></div>
+    </form>
+</div>
+
+<!-- ==================== PARCOURS ==================== -->
+<?php $parcours = (new \App\Models\ParcoursCvModel())->listerParCandidature((int) $candidature['id']); ?>
+<?php if (!empty($parcours)): ?>
+<div class="content-card p-4 mb-4">
+    <h4 class="mb-3"><i class="bi bi-book me-1"></i> Parcours (formation / expérience)</h4>
+    <?php foreach ($parcours as $p): ?>
+        <div class="mb-3 pb-3 border-bottom">
+            <div class="d-flex justify-content-between">
+                <strong><?= esc($p['titre']) ?></strong>
+                <span class="badge bg-<?= $p['type'] === 'formation' ? 'info' : 'secondary' ?>"><?= esc($p['type']) ?></span>
+            </div>
+            <p class="text-muted small mb-1"><?= esc($p['lieu']) ?> · <?= esc($p['date_debut'] ?? '') ?> → <?= esc($p['date_fin'] ?? 'en cours') ?></p>
+            <?php if (!empty($p['description'])): ?>
+                <p class="mb-0 small"><?= nl2br(esc($p['description'])) ?></p>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
 <!-- ==================== CONDITIONS PROPOSÉES ==================== -->
 <div class="card p-4 mb-4">
-    <h4 class="mb-3">📋 Conditions de l'annonce</h4>
+    <h4 class="mb-3"><i class="bi bi-clipboard me-1"></i> Conditions de l'annonce</h4>
     <div class="row">
         <div class="col-md-4">
             <p class="mb-1"><strong>Salaire proposé :</strong>
@@ -126,7 +214,7 @@
         <p class="text-muted small mb-2">Propose directement les conditions de l'annonce au candidat.</p>
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="proposer_conditions" class="btn btn-success">
-                ✓ Proposer les conditions
+                <i class="bi bi-check-lg me-1"></i> Proposer les conditions
             </button>
         </form>
     </div>
@@ -136,14 +224,14 @@
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="refuser" class="btn btn-danger"
                     onclick="return confirm('Refuser définitivement cette candidature ?');">
-                ✗ Refuser
+                <i class="bi bi-x-lg me-1"></i> Refuser
             </button>
         </form>
     </div>
 
 <?php elseif ($candidature['statut_code'] === 'ESSAI_PROPOSE'): ?>
     <div class="alert alert-info">
-        ⏳ <strong>En attente de la réponse du candidat à la proposition d'essai.</strong>
+        <i class="bi bi-hourglass me-1"></i> <strong>En attente de la réponse du candidat à la proposition d'essai.</strong>
     </div>
     <?php $essai = (new \App\Models\EssaiModel())->trouverParCandidature((int) $candidature['id']); ?>
     <?php if ($essai): ?>
@@ -161,7 +249,7 @@
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="refuser" class="btn btn-danger"
                     onclick="return confirm('Refuser ce candidat ?');">
-                ✗ Marquer comme non retenu
+                <i class="bi bi-x-lg me-1"></i> Marquer comme non retenu
             </button>
         </form>
     </div>
@@ -171,20 +259,20 @@
         <h5>Après essai</h5>
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="proposer_conditions" class="btn btn-success">
-                ✓ Proposer les conditions
+                <i class="bi bi-check-lg me-1"></i> Proposer les conditions
             </button>
         </form>
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline ms-2">
             <button type="submit" name="action" value="refuser" class="btn btn-danger"
                     onclick="return confirm('Refuser ce candidat après essai ?');">
-                ✗ Refuser après essai
+                <i class="bi bi-x-lg me-1"></i> Refuser après essai
             </button>
         </form>
     </div>
 
 <?php elseif ($candidature['statut_code'] === 'ESSAI_REFUSE'): ?>
     <div class="alert alert-warning">
-        ℹ️ Le candidat a refusé l'essai. Vous pouvez néanmoins, après évaluation, lui proposer
+        <i class="bi bi-info-circle me-1"></i> Le candidat a refusé l'essai. Vous pouvez néanmoins, après évaluation, lui proposer
         directement les conditions ou le refuser définitivement.
     </div>
 
@@ -192,7 +280,7 @@
         <h5>Proposer les conditions</h5>
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="proposer_conditions" class="btn btn-success">
-                ✓ Proposer les conditions
+                <i class="bi bi-check-lg me-1"></i> Proposer les conditions
             </button>
         </form>
     </div>
@@ -202,7 +290,7 @@
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action" class="d-inline">
             <button type="submit" name="action" value="refuser" class="btn btn-danger"
                     onclick="return confirm('Refuser définitivement ?');">
-                ✗ Candidat non retenu
+                <i class="bi bi-x-lg me-1"></i> Candidat non retenu
             </button>
         </form>
     </div>
@@ -210,7 +298,7 @@
 <?php elseif ($candidature['statut_code'] === 'CONDITIONS_PROPOSEES'): ?>
     <?php $salaireAffiche = $candidature['salaire_final'] ?? $candidature['salaire_propose']; ?>
     <div class="alert alert-info">
-        ⏳ <strong>En attente de la réponse du candidat.</strong><br>
+        <i class="bi bi-hourglass me-1"></i> <strong>En attente de la réponse du candidat.</strong><br>
         Conditions proposées : <strong><?= number_format($salaireAffiche, 0, ',', ' ') ?> Ar</strong>
         — Heure : <strong><?= esc($candidature['heure_debut']) ?></strong>
         <?php if (!empty($candidature['autres_conditions'])): ?>
@@ -231,7 +319,7 @@
                 ->get()->getRow();
     ?>
     <div class="card p-4 mb-3">
-        <h5 class="mb-3">💰 Négociation de salaire</h5>
+        <h5 class="mb-3"><i class="bi bi-cash me-1"></i> Négociation de salaire</h5>
         <div class="row mb-3">
             <div class="col-md-4">
                 <p class="mb-1 text-muted small">Salaire initial</p>
@@ -251,8 +339,8 @@
 
         <?php if ($candidature['salaire_negocie'] > $poste->salaire_max): ?>
             <div class="alert alert-warning mb-3">
-                ⚠️ La demande du candidat dépasse le maximum autorisé pour ce poste.
-                Vous pouvez contre-proposer le salaire maximum.
+                <i class="bi bi-diagram-3 me-1"></i> La demande dépasse le maximum du poste.
+                L’acceptation suit obligatoirement le workflow <strong>RH → Finance → DG</strong>.
             </div>
         <?php endif; ?>
 
@@ -260,29 +348,44 @@
             <?php if ($candidature['salaire_negocie'] <= $poste->salaire_max): ?>
                 <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
                     <button type="submit" name="action" value="accepter_nego" class="btn btn-success">
-                        ✓ Accepter la demande (<?= number_format($candidature['salaire_negocie'], 0, ',', ' ') ?> Ar)
+                        <i class="bi bi-check-lg me-1"></i> Accepter la demande (<?= number_format($candidature['salaire_negocie'], 0, ',', ' ') ?> Ar)
+                    </button>
+                </form>
+            <?php endif; ?>
+
+            <?php if ($candidature['salaire_negocie'] <= $poste->salaire_max): ?>
+                <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
+                    <button type="submit" name="action" value="proposer_max" class="btn btn-warning">
+                        <i class="bi bi-arrow-left-right me-1"></i> Contre-proposer le max (<?= number_format($poste->salaire_max, 0, ',', ' ') ?> Ar)
                     </button>
                 </form>
             <?php endif; ?>
 
             <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
-                <button type="submit" name="action" value="proposer_max" class="btn btn-warning">
-                    ⚖️ Contre-proposer le max (<?= number_format($poste->salaire_max, 0, ',', ' ') ?> Ar)
-                </button>
-            </form>
-
-            <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
                 <button type="submit" name="action" value="refuser_nego" class="btn btn-danger"
                         onclick="return confirm('Refuser définitivement ce candidat ?');">
-                    ✗ Refuser définitivement
+                    <i class="bi bi-x-lg me-1"></i> Refuser définitivement
                 </button>
             </form>
         </div>
     </div>
 
+<?php elseif (in_array($candidature['statut_code'], ['SALAIRE_ATTENTE_FINANCE', 'SALAIRE_ATTENTE_DG'], true)): ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-hourglass-split me-1"></i>
+        <strong>Validation salariale en cours.</strong>
+        La proposition supérieure au plafond suit le workflow
+        <strong>RH → Finance → DG</strong>.
+        <?php if ($candidature['statut_code'] === 'SALAIRE_ATTENTE_FINANCE'): ?>
+            Étape actuelle : Finance.
+        <?php else: ?>
+            Étape actuelle : DG.
+        <?php endif; ?>
+    </div>
+
 <?php elseif ($candidature['statut_code'] === 'CONDITIONS_REFUSEES'): ?>
     <div class="alert alert-danger">
-        ⚠️ Le candidat a refusé la proposition.
+        <i class="bi bi-exclamation-triangle me-1"></i> Le candidat a refusé la proposition.
     </div>
 
     <div class="card p-4 mb-3">
@@ -291,7 +394,7 @@
             <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
                 <button type="submit" name="action" value="cloturer" class="btn btn-danger"
                         onclick="return confirm('Clôturer définitivement cette candidature ?');">
-                    ✗ Clôturer la candidature
+                    <i class="bi bi-x-lg me-1"></i> Clôturer la candidature
                 </button>
             </form>
             <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
@@ -309,7 +412,7 @@
         ?? $candidature['salaire_propose'];
     ?>
     <div class="card p-4 mb-3">
-        <h5 class="mb-3">📄 Établir le contrat</h5>
+        <h5 class="mb-3"><i class="bi bi-file-earmark me-1"></i> Établir le contrat</h5>
         <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
             <input type="hidden" name="action" value="etablir_contrat">
             <div class="row g-3">
@@ -368,14 +471,14 @@
 
             </div>
             
-            <button type="submit" class="btn btn-success mt-3">✓ Établir le contrat</button>
+            <button type="submit" class="btn btn-success mt-3"><i class="bi bi-check-lg me-1"></i> Établir le contrat</button>
         </form>
     </div>
 
 <?php elseif ($candidature['statut_code'] === 'CANDIDAT_EMBAUCHE'): ?>
     <?php $contratInfo = (new \App\Models\ContratModel())->trouverParCandidature((int) $candidature['id']); ?>
     <div class="alert alert-success">
-        🎉 <strong>Candidat embauché.</strong> Le contrat a été établi et l'annonce a été clôturée.
+        <i class="bi bi-check2-circle me-1"></i> <strong>Candidat embauché.</strong> Le contrat a été établi et l'annonce a été clôturée.
     </div>
     <?php if ($contratInfo): ?>
         <div class="card p-4 mb-3">
@@ -403,7 +506,7 @@
 
 <?php elseif ($candidature['statut_code'] === 'CANDIDAT_NON_RETENU'): ?>
     <div class="alert alert-secondary">
-        ❌ <strong>Candidat non retenu.</strong> La candidature est clôturée.
+        <i class="bi bi-x-circle me-1"></i> <strong>Candidat non retenu.</strong> La candidature est clôturée.
     </div>
 
 <?php endif; ?>

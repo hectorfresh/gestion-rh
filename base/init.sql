@@ -61,9 +61,12 @@ CREATE TABLE besoin (
     id INT AUTO_INCREMENT PRIMARY KEY,
     poste_id INT NOT NULL,
     manager_id INT NOT NULL,
+    departement_id INT NULL,
     nombre_postes INT NOT NULL DEFAULT 1,
     cout_engage DECIMAL(15,2) NOT NULL,
     date_creation DATETIME NOT NULL,
+    date_souhaitee DATE NULL,
+    motif VARCHAR(255) NULL,
     statut_id INT NOT NULL,
     FOREIGN KEY (poste_id)   REFERENCES poste(id),
     FOREIGN KEY (manager_id) REFERENCES utilisateur(id),
@@ -146,6 +149,20 @@ CREATE TABLE candidature (
     FOREIGN KEY (statut_id)   REFERENCES statut_candidature(id)
 );
 
+CREATE TABLE validation_salaire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidature_id INT NOT NULL,
+    etape VARCHAR(20) NOT NULL,
+    decision VARCHAR(20) NOT NULL,
+    salaire_propose DECIMAL(15,2) NOT NULL,
+    utilisateur_id INT NULL,
+    commentaire TEXT NULL,
+    date_validation DATETIME NOT NULL,
+    FOREIGN KEY (candidature_id) REFERENCES candidature(id) ON DELETE CASCADE,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id),
+    UNIQUE KEY uk_validation_salaire_etape (candidature_id, etape)
+);
+
 -- Essai professionnel
 CREATE TABLE essai (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -165,7 +182,8 @@ CREATE TABLE type_contrat (
 -- Contrat final
 CREATE TABLE contrat (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    candidature_id INT NOT NULL UNIQUE,
+    candidature_id INT NOT NULL,
+    employe_id INT NULL,
     type_contrat_id INT NOT NULL,
     salaire DECIMAL(15,2) NOT NULL,
     date_debut DATE NOT NULL,
@@ -224,3 +242,114 @@ CREATE TABLE valeur_cv (
 
 
 ALTER TABLE annonce ADD COLUMN pourvue TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Parcours (formation / expérience) d'un candidat, saisis lors du postulage
+CREATE TABLE IF NOT EXISTS parcours_cv (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidature_id INT NOT NULL,
+    type ENUM('formation','experience') NOT NULL,
+    titre VARCHAR(200) NOT NULL,
+    lieu VARCHAR(200) NOT NULL,
+    date_debut DATE NULL,
+    date_fin DATE NULL,
+    description TEXT NULL,
+    FOREIGN KEY (candidature_id) REFERENCES candidature(id) ON DELETE CASCADE
+);
+
+-- =====================================================
+-- Domaines RH complémentaires
+-- =====================================================
+
+CREATE TABLE departement (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(30) NOT NULL UNIQUE,
+    libelle VARCHAR(100) NOT NULL UNIQUE,
+    actif TINYINT(1) NOT NULL DEFAULT 1
+);
+
+ALTER TABLE besoin
+    ADD CONSTRAINT fk_besoin_departement
+    FOREIGN KEY (departement_id) REFERENCES departement(id);
+
+CREATE TABLE employe (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidat_id INT NOT NULL UNIQUE,
+    matricule VARCHAR(30) NOT NULL UNIQUE,
+    date_embauche DATE NOT NULL,
+    statut VARCHAR(30) NOT NULL DEFAULT 'ACTIF',
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (candidat_id) REFERENCES candidat(id)
+);
+
+ALTER TABLE contrat
+    ADD CONSTRAINT fk_contrat_employe
+    FOREIGN KEY (employe_id) REFERENCES employe(id);
+
+CREATE TABLE affectation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employe_id INT NOT NULL,
+    poste_id INT NOT NULL,
+    departement_id INT NULL,
+    date_debut DATE NOT NULL,
+    date_fin DATE NULL,
+    FOREIGN KEY (employe_id) REFERENCES employe(id),
+    FOREIGN KEY (poste_id) REFERENCES poste(id),
+    FOREIGN KEY (departement_id) REFERENCES departement(id)
+);
+
+CREATE TABLE entretien (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidature_id INT NOT NULL,
+    planifie_par INT NOT NULL,
+    date_entretien DATETIME NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    statut VARCHAR(30) NOT NULL DEFAULT 'PLANIFIE',
+    compte_rendu TEXT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (candidature_id) REFERENCES candidature(id) ON DELETE CASCADE,
+    FOREIGN KEY (planifie_par) REFERENCES utilisateur(id)
+);
+
+CREATE TABLE evaluation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    entretien_id INT NOT NULL,
+    evaluateur_id INT NOT NULL,
+    note DECIMAL(5,2) NOT NULL,
+    decision VARCHAR(30) NOT NULL,
+    commentaire TEXT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (entretien_id) REFERENCES entretien(id) ON DELETE CASCADE,
+    FOREIGN KEY (evaluateur_id) REFERENCES utilisateur(id)
+);
+
+CREATE TABLE document_employe (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employe_id INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    nom_fichier VARCHAR(255) NOT NULL,
+    chemin VARCHAR(500) NOT NULL,
+    statut VARCHAR(30) NOT NULL DEFAULT 'A_VERIFIER',
+    depose_le DATETIME NOT NULL,
+    FOREIGN KEY (employe_id) REFERENCES employe(id) ON DELETE CASCADE
+);
+
+CREATE TABLE onboarding (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employe_id INT NOT NULL UNIQUE,
+    date_debut DATE NOT NULL,
+    date_fin_prevue DATE NULL,
+    statut VARCHAR(30) NOT NULL DEFAULT 'A_PREPARER',
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (employe_id) REFERENCES employe(id) ON DELETE CASCADE
+);
+
+CREATE TABLE onboarding_tache (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    onboarding_id INT NOT NULL,
+    libelle VARCHAR(150) NOT NULL,
+    responsable VARCHAR(100) NULL,
+    echeance DATE NULL,
+    statut VARCHAR(30) NOT NULL DEFAULT 'A_FAIRE',
+    terminee_le DATETIME NULL,
+    FOREIGN KEY (onboarding_id) REFERENCES onboarding(id) ON DELETE CASCADE
+);

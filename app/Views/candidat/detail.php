@@ -34,6 +34,31 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
     </div>
 </section>
 
+<?php $parcours = (new \App\Models\ParcoursCvModel())->listerParCandidature((int) $candidature['id']); ?>
+<?php if (!empty($parcours)): ?>
+<section class="content-card mb-4">
+    <div class="content-card-header">
+        <div>
+            <h2 class="content-card-title">Parcours (formation / expérience)</h2>
+        </div>
+    </div>
+    <div class="content-card-body">
+        <?php foreach ($parcours as $p): ?>
+            <div class="mb-3 pb-3 border-bottom">
+                <div class="d-flex justify-content-between">
+                    <strong><?= esc($p['titre']) ?></strong>
+                    <span class="badge bg-<?= $p['type'] === 'formation' ? 'info' : 'secondary' ?>"><?= esc($p['type']) ?></span>
+                </div>
+                <p class="text-muted small mb-1"><?= esc($p['lieu']) ?> · <?= esc($p['date_debut'] ?? '') ?> → <?= esc($p['date_fin'] ?? 'en cours') ?></p>
+                <?php if (!empty($p['description'])): ?>
+                    <p class="mb-0 small"><?= nl2br(esc($p['description'])) ?></p>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php if (!empty($cv)): ?>
 <section class="content-card mb-4">
     <div class="content-card-header">
@@ -84,7 +109,7 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
         <p class="mb-0"><strong>Autres conditions :</strong> <?= esc($candidature['autres_conditions'] ?? '—') ?></p>
         <?php if ($estNegocie && $candidature['salaire_negocie']): ?>
             <div class="alert alert-warning mt-3 mb-0">
-                ⏳ Votre demande de salaire (<strong><?= number_format($candidature['salaire_negocie'], 0, ',', ' ') ?> Ar</strong>)
+                <i class="bi bi-hourglass me-1"></i> Votre demande de salaire (<strong><?= number_format($candidature['salaire_negocie'], 0, ',', ' ') ?> Ar</strong>)
                 est en cours d'étude par le RH.
             </div>
         <?php endif; ?>
@@ -95,7 +120,7 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
     <section class="content-card mb-4">
         <div class="content-card-header">
             <div>
-                <h2 class="content-card-title">🎯 Essai proposé</h2>
+                <h2 class="content-card-title"><i class="bi bi-bullseye me-1"></i> Essai proposé</h2>
             </div>
         </div>
         <div class="content-card-body">
@@ -104,8 +129,8 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
                 <p><?= nl2br(esc($essai['commentaire'])) ?></p>
             <?php endif; ?>
             <form method="post" action="/candidat/candidature/<?= $candidature['id'] ?>/action" class="d-flex gap-2">
-                <button type="submit" name="action" value="accepter_essai" class="btn btn-success">✓ Accepter l'essai</button>
-                <button type="submit" name="action" value="refuser_essai" class="btn btn-danger">✗ Refuser l'essai</button>
+                <button type="submit" name="action" value="accepter_essai" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Accepter l'essai</button>
+                <button type="submit" name="action" value="refuser_essai" class="btn btn-danger"><i class="bi bi-x-lg me-1"></i> Refuser l'essai</button>
             </form>
         </div>
     </section>
@@ -113,27 +138,36 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
     <section class="content-card mb-4">
         <div class="content-card-header">
             <div>
-                <h2 class="content-card-title">🤝 Répondre à la proposition</h2>
+                <h2 class="content-card-title"><i class="bi bi-handshake me-1"></i> Répondre à la proposition</h2>
             </div>
         </div>
         <div class="content-card-body">
             <p>Salaire proposé : <strong><?= number_format($salaireAffiche, 0, ',', ' ') ?> Ar</strong></p>
             <form method="post" action="/candidat/candidature/<?= $candidature['id'] ?>/action" class="d-flex gap-2 mb-3">
-                <button type="submit" name="action" value="accepter_conditions" class="btn btn-success">✓ Accepter</button>
-                <button type="submit" name="action" value="refuser_conditions" class="btn btn-danger">✗ Refuser</button>
+                <button type="submit" name="action" value="accepter_conditions" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Accepter</button>
+                <button type="button" id="btn-refuser-conditions" class="btn btn-danger"><i class="bi bi-x-lg me-1"></i> Non, je souhaite proposer</button>
             </form>
             <?php if (empty($candidature['salaire_final'])): ?>
-                <h4 class="mt-3">Ou négocier le salaire</h4>
-                <form method="post" action="/candidat/candidature/<?= $candidature['id'] ?>/action" class="row g-2 align-items-end">
+                <form method="post" action="/candidat/candidature/<?= $candidature['id'] ?>/action" id="form-negociation" class="row g-2 align-items-end d-none">
                     <input type="hidden" name="action" value="negocier">
                     <div class="col-md-4">
-                        <label class="form-label small">Votre salaire souhaité (Ar)</label>
-                        <input type="number" name="salaire_negocie" step="0.01" min="0" class="form-control" required>
+                        <label class="form-label small">Votre proposition salariale (Ar)</label>
+                        <input type="number" name="salaire_negocie" step="0.01" min="1" class="form-control" required>
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary">Envoyer la négociation</button>
+                        <button type="submit" class="btn btn-primary">Envoyer ma proposition</button>
                     </div>
                 </form>
+                <p id="aide-negociation" class="small text-muted d-none">
+                    Indiquez le salaire que vous proposez en remplacement de la proposition actuelle.
+                </p>
+                <script>
+                    document.getElementById('btn-refuser-conditions').addEventListener('click', function () {
+                        document.getElementById('form-negociation').classList.remove('d-none');
+                        document.getElementById('aide-negociation').classList.remove('d-none');
+                        this.classList.add('d-none');
+                    });
+                </script>
             <?php endif; ?>
         </div>
     </section>
@@ -141,7 +175,7 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
     <section class="content-card mb-4">
         <div class="content-card-header">
             <div>
-                <h2 class="content-card-title">📄 Contrat établi</h2>
+                <h2 class="content-card-title"><i class="bi bi-file-earmark me-1"></i> Contrat établi</h2>
             </div>
         </div>
         <div class="content-card-body">
@@ -149,7 +183,7 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
             <p><strong>Salaire :</strong> <?= number_format($contrat['salaire'], 0, ',', ' ') ?> Ar</p>
             <p><strong>Date début :</strong> <?= esc($contrat['date_debut']) ?></p>
             <?php if ($contrat['date_fin']): ?><p><strong>Date fin :</strong> <?= esc($contrat['date_fin']) ?></p><?php endif; ?>
-            <div class="alert alert-success mb-0">🎉 Félicitations, vous êtes embauché(e) !</div>
+            <div class="alert alert-success mb-0"><i class="bi bi-check2-circle me-1"></i> Félicitations, vous êtes embauché(e) !</div>
         </div>
     </section>
 <?php endif; ?>

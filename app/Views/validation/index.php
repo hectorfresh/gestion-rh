@@ -12,23 +12,23 @@
 <div class="row row-cards g-3 mb-4">
     <div class="col-sm-6 col-xl-4">
         <div class="stat-card">
-            <div class="stat-label">Budget total</div>
+            <div class="stat-label">Budget annuel total</div>
             <div class="stat-value"><?= number_format($total, 0, ',', ' ') ?> Ar</div>
-            <div class="stat-note">Montant global disponible</div>
+            <div class="stat-note">Budget Finance de l'année</div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
         <div class="stat-card">
-            <div class="stat-label">Engagé</div>
+            <div class="stat-label">Masse salariale annuelle</div>
             <div class="stat-value"><?= number_format($engage, 0, ',', ' ') ?> Ar</div>
-            <div class="stat-note">Déjà engagé sur les besoins</div>
+            <div class="stat-note">Salaires des employés actifs</div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
         <div class="stat-card">
             <div class="stat-label">Restant</div>
             <div class="stat-value text-success"><?= number_format($restant, 0, ',', ' ') ?> Ar</div>
-            <div class="stat-note">Budget disponible</div>
+            <div class="stat-note">Après déduction des salaires actifs</div>
         </div>
     </div>
 </div>

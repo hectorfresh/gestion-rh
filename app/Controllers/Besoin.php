@@ -6,6 +6,7 @@ use App\Models\BesoinModel;
 use App\Models\PosteModel;
 use App\Models\StatutBesoinModel;
 use App\Models\ValidationModel;
+use App\Models\DepartementModel;
 
 class Besoin extends BaseController
 {
@@ -23,7 +24,10 @@ class Besoin extends BaseController
     {
         $postes = (new PosteModel())->orderBy('libelle', 'ASC')->findAll();
 
-        return view('besoin/create', ['postes' => $postes]);
+        return view('besoin/create', [
+            'postes' => $postes,
+            'departements' => (new DepartementModel())->actifs(),
+        ]);
     }
 
     // Enregistrement du besoin
@@ -32,6 +36,9 @@ public function create()
     $rules = [
         'poste_id'      => 'required|integer',
         'nombre_postes' => 'required|integer|greater_than[0]',
+        'departement_id' => 'permit_empty|integer',
+        'date_souhaitee' => 'permit_empty|valid_date[Y-m-d]',
+        'motif'         => 'permit_empty|max_length[255]',
     ];
 
     if (!$this->validate($rules)) {
@@ -56,9 +63,12 @@ public function create()
     $besoinModel->insert([
         'poste_id'      => $poste['id'],
         'manager_id'    => session()->get('user_id'),
+        'departement_id' => $this->request->getPost('departement_id') ?: null,
         'nombre_postes' => $nombre,
         'cout_engage'   => $cout,
         'date_creation' => date('Y-m-d H:i:s'),
+        'date_souhaitee' => $this->request->getPost('date_souhaitee') ?: null,
+        'motif'         => trim((string) $this->request->getPost('motif')) ?: null,
         'statut_id'     => (new StatutBesoinModel())->idParCode($statutCode),
     ]);
 

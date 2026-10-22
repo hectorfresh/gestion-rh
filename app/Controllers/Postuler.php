@@ -8,6 +8,9 @@ use App\Models\CandidatModel;
 use App\Models\StatutCandidatureModel;
 use App\Models\ChampCvModel;
 use App\Models\ValeurCvModel;
+use App\Models\ParcoursCvModel;
+use App\Models\QuestionCvModel;
+use App\Models\ReponseCvModel;
 
 class Postuler extends BaseController
 {
@@ -29,6 +32,7 @@ class Postuler extends BaseController
             'annonce'  => $annonce,
             'candidat' => (new CandidatModel())->find(session()->get('candidat_id')),
             'champs'   => (new ChampCvModel())->tousAvecOptions(),
+            'questions' => (new QuestionCvModel())->toutesOrdonnees(),
         ]);
     }
 
@@ -47,6 +51,7 @@ class Postuler extends BaseController
         }
 
         $champs = (new ChampCvModel())->tousAvecOptions();
+        $questions = (new QuestionCvModel())->toutesOrdonnees();
 
         // Vérifier que tous les champs liste ont une valeur choisie
         foreach ($champs as $c) {
@@ -54,6 +59,21 @@ class Postuler extends BaseController
                 return redirect()->back()->withInput()
                                  ->with('error', 'Veuillez répondre à tous les champs obligatoires.');
             }
+
+            $reponses = [];
+            foreach ($questions as $question) {
+                $valeur = $this->request->getPost('question_' . $question['id']);
+                if ($valeur === null || !in_array((string) $valeur, ['0', '1'], true)) {
+                    return redirect()->back()->withInput()
+                        ->with('error', 'Veuillez répondre à toutes les questions Oui/Non.');
+                }
+                $reponses[] = [
+                    'question_cv_id' => (int) $question['id'],
+                    'valeur' => (int) $valeur,
+                ];
+            }
+
+            $aUneReponseNegative = count(array_filter($reponses, static fn (array $r): bool => $r['valeur'] === 0)) > 0;
         }
 
         // 1) Créer la candidature
@@ -61,10 +81,20 @@ class Postuler extends BaseController
         $candidatureModel->insert([
             'annonce_id'       => (int) $annonce_id,
             'candidat_id'      => session()->get('candidat_id'),
-            'statut_id'        => (new StatutCandidatureModel())->idParCode('EN_ATTENTE'),
+            'statut_id'        => (new StatutCandidatureModel())->idParCode(
+                $aUneReponseNegative ? 'REPONSES_A_VERIFIER' : 'EN_ATTENTE'
+            ),
             'date_candidature' => date('Y-m-d H:i:s'),
         ]);
         $candidature_id = $candidatureModel->getInsertID();
+
+        $reponseModel = new ReponseCvModel();
+        foreach ($reponses as $reponse) {
+            $reponseModel->insert([
+                'candidature_id' => $candidature_id,
+                ...$reponse,
+            ]);
+        }
 
         // 2) Enregistrer les valeurs du CV
         $valeurModel = new ValeurCvModel();
@@ -84,6 +114,28 @@ class Postuler extends BaseController
             }
 
             $valeurModel->insert($data);
+        }
+
+        // 2bis) Enregistrer les parcours (formation / expérience) multiples
+        $types  = $this->request->getPost('parcours_type')  ?? [];
+        $titres = $this->request->getPost('parcours_titre') ?? [];
+        $lieux  = $this->request->getPost('parcours_lieu')  ?? [];
+        $debut  = $this->request->getPost('parcours_debut') ?? [];
+        $fin    = $this->request->getPost('parcours_fin')    ?? [];
+        $descs  = $this->request->getPost('parcours_desc')   ?? [];
+        $parcoursModel = new ParcoursCvModel();
+        foreach ($titres as $i => $t) {
+            $t = trim((string) $t);
+            if ($t === '') continue;
+            $parcoursModel->insert([
+                'candidature_id' => $candidature_id,
+                'type'           => in_array($types[$i] ?? '', ['formation','experience']) ? $types[$i] : 'experience',
+                'titre'          => $t,
+                'lieu'           => trim((string) ($lieux[$i] ?? '')),
+                'date_debut'     => ($debut[$i] ?? '') ?: null,
+                'date_fin'       => ($fin[$i] ?? '') ?: null,
+                'description'    => trim((string) ($descs[$i] ?? '')) ?: null,
+            ]);
         }
 
         // 3) Notification

@@ -35,6 +35,8 @@ public function trouverAvecDetails(int $id)
                           annonce.salaire_propose, annonce.heure_debut,
                           annonce.autres_conditions, annonce.id AS annonce_id,
                           poste.libelle AS poste_libelle,
+                          besoin.poste_id,
+                          besoin.departement_id,
                           besoin.nombre_postes,
                           statut_candidature.libelle AS statut_libelle,
                           statut_candidature.code AS statut_code,
@@ -50,6 +52,14 @@ public function trouverAvecDetails(int $id)
                 ->where('candidature.id', $id)
                 ->first();
 }
+
+    public function aDesReponsesNegatives(int $candidatureId): bool
+    {
+        return (new \App\Models\ReponseCvModel())
+            ->where('candidature_id', $candidatureId)
+            ->where('valeur', 0)
+            ->countAllResults() > 0;
+    }
     // Liste toutes les candidatures (côté RH)
     public function listerToutes()
     {
