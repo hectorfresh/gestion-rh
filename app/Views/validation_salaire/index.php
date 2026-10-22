@@ -6,7 +6,7 @@
         <div class="page-eyebrow">Validation salariale / <?= esc($etape) ?></div>
         <h1 class="page-title">Demandes de salaire</h1>
         <p class="page-description">
-            Finance est validée automatiquement ; le DG intervient uniquement pour la décision finale.
+        Le DG intervient uniquement pour la décision finale.
         </p>
     </div>
 </header>

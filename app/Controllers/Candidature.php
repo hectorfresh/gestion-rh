@@ -7,11 +7,14 @@ use App\Models\StatutCandidatureModel;
 use App\Models\EssaiModel;
 use App\Models\ContratModel;
 use App\Models\TypeContratModel;
+use App\Models\QuestionContratModel;
+use App\Models\ReponseContratModel;
 use App\Services\EmployeService;
 use App\Services\ContratService;
 use App\Services\OnboardingService;
 use App\Services\AffectationService;
 use App\Services\ValidationSalaireService;
+use App\Services\QuestionnaireContratService;
 
 class Candidature extends BaseController
 {
@@ -37,6 +40,10 @@ class Candidature extends BaseController
             'essai'       => (new EssaiModel())->trouverParCandidature((int) $id),
             'contrat'     => (new ContratModel())->trouverParCandidature((int) $id),
             'types'       => (new TypeContratModel())->findAll(),
+            'questions'   => (new QuestionContratModel())->pourCandidature((int) $id),
+            'reponses'    => (new ReponseContratModel())->pourQuestions(
+                array_column((new QuestionContratModel())->pourCandidature((int) $id), 'id')
+            ),
         ]);
     }
 
@@ -52,6 +59,21 @@ class Candidature extends BaseController
         $email  = $candidature['candidat_email'];
         $prenom = $candidature['candidat_prenom'];
         $titre  = $candidature['annonce_titre'];
+
+        if ($statut === 'ATTENTE_VALIDATION_RH') {
+            if ($action === 'accepter_remarques') {
+                (new QuestionnaireContratService())->accepterRemarques((int) $id);
+                envoyer_email($email, 'Remarques acceptées',
+                    "Bonjour $prenom,\n\nLe RH a accepté vos remarques. Votre contrat peut maintenant être établi.");
+                return redirect()->to("/candidature/$id")->with('success', 'Remarques acceptées. Contrat autorisé.');
+            }
+            if ($action === 'refuser_remarques') {
+                (new QuestionnaireContratService())->refuserRemarques((int) $id);
+                envoyer_email($email, 'Remarques refusées',
+                    "Bonjour $prenom,\n\nLe RH a refusé vos remarques. Votre candidature est clôturée.");
+                return redirect()->to("/candidature/$id")->with('success', 'Remarques refusées.');
+            }
+        }
 
         // ============ EN_ATTENTE ============
         if (in_array($statut, ['EN_ATTENTE', 'REPONSES_A_VERIFIER'], true)) {
@@ -193,8 +215,8 @@ if ($statut === 'CONDITIONS_REFUSEES') {
 }
 
 
-        // ============ CONDITIONS_ACCEPTEES → établir contrat ============
-if ($statut === 'CONDITIONS_ACCEPTEES' && $action === 'etablir_contrat') {
+        // ============ CONTRAT_PRET → établir contrat ============
+if ($statut === 'CONTRAT_PRET' && $action === 'etablir_contrat') {
     if (!$this->validate([
         'type_contrat' => 'required|in_list[CDI,CDD,Essai]',
         'salaire' => 'required|numeric|greater_than[0]',

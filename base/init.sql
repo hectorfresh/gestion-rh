@@ -149,6 +149,24 @@ CREATE TABLE candidature (
     FOREIGN KEY (statut_id)   REFERENCES statut_candidature(id)
 );
 
+CREATE TABLE question_contrat (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidature_id INT NOT NULL,
+    libelle VARCHAR(255) NOT NULL,
+    proposition TEXT NOT NULL,
+    ordre INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (candidature_id) REFERENCES candidature(id) ON DELETE CASCADE
+);
+
+CREATE TABLE reponse_contrat (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question_contrat_id INT NOT NULL UNIQUE,
+    reponse TINYINT(1) NOT NULL,
+    remarque TEXT NULL,
+    date_reponse DATETIME NOT NULL,
+    FOREIGN KEY (question_contrat_id) REFERENCES question_contrat(id) ON DELETE CASCADE
+);
+
 CREATE TABLE validation_salaire (
     id INT AUTO_INCREMENT PRIMARY KEY,
     candidature_id INT NOT NULL,
