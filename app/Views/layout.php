@@ -39,7 +39,7 @@ $nom         = session()->get('nom');
                         <path d="M12 11L4 7"></path>
                     </svg>
                 </span>
-                <span class="brand-name">Gestion<span>RH KOBA</span></span>
+                <span class="brand-name">Gestion <span> RH </span></span>
             </a>
 
             <div class="workspace">
