@@ -25,6 +25,7 @@ $routes->get('/candidat/logout',   'Candidat::logout');
 $routes->get('/candidat/dashboard','Candidat::dashboard', ['filter' => 'auth_candidat']);
 $routes->get('/candidat/candidature/(:num)',        'Candidat::detail/$1', ['filter' => 'auth_candidat']);
 $routes->post('/candidat/candidature/(:num)/action','Candidat::action/$1', ['filter' => 'auth_candidat']);
+$routes->post('/candidat/candidature/(:num)/questionnaire','Candidat::questionnaire/$1', ['filter' => 'auth_candidat']);
 
 // --- Postuler (candidat connecté) ---
 $routes->get('/postuler/(:num)',  'Postuler::form/$1',       ['filter' => 'auth_candidat']);

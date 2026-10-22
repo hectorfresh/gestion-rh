@@ -6,6 +6,10 @@ use App\Models\CandidatModel;
 use App\Models\CandidatureModel;
 use App\Models\EssaiModel;
 use App\Models\ContratModel;
+use App\Models\QuestionContratModel;
+use App\Models\ReponseContratModel;
+use App\Services\QuestionnaireContratService;
+use RuntimeException;
 
 class Candidat extends BaseController
 {
@@ -95,11 +99,15 @@ public function register()
 
         $essai    = (new EssaiModel())->trouverParCandidature((int) $id);
         $contrat  = (new ContratModel())->trouverParCandidature((int) $id);
+        $questions = (new QuestionContratModel())->pourCandidature((int) $id);
+        $reponses = (new ReponseContratModel())->pourQuestions(array_column($questions, 'id'));
 
         return view('candidat/detail', [
             'candidature' => $candidature,
             'essai'       => $essai,
             'contrat'     => $contrat,
+            'questions'   => $questions,
+            'reponses'    => array_column($reponses, null, 'question_contrat_id'),
         ]);
     }
 
@@ -131,15 +139,24 @@ public function register()
         // Conditions proposées
         if ($candidature['statut_code'] === 'CONDITIONS_PROPOSEES') {
             if ($action === 'accepter_conditions') {
-                $this->_changerStatut($id, 'CONDITIONS_ACCEPTEES');
+                $service = new QuestionnaireContratService();
+                $service->creerPourCandidature($candidature);
+                $this->_changerStatut($id, 'QUESTIONNAIRE_CONTRAT');
+                envoyer_email(
+                    session()->get('candidat_email'),
+                    'Questionnaire avant contrat',
+                    "Bonjour {$candidature['candidat_prenom']},\n\n"
+                    . "Merci de répondre au questionnaire de confirmation avant la génération de votre contrat."
+                );
                 return redirect()->to("/candidat/candidature/$id")
-                                 ->with('success', 'Conditions acceptées. En attente du contrat.');
+                    ->with('success', 'Conditions acceptées. Répondez au questionnaire avant le contrat.');
             }
             if ($action === 'refuser_conditions') {
                 $this->_changerStatut($id, 'CONDITIONS_REFUSEES');
                 return redirect()->to("/candidat/candidature/$id")
                                  ->with('success', 'Conditions refusées.');
             }
+
             if ($action === 'negocier') {
                 $demande = $this->request->getPost('salaire_negocie');
                 if (!$demande || $demande <= 0) {
@@ -157,6 +174,40 @@ public function register()
 
         return redirect()->to("/candidat/candidature/$id")
                          ->with('error', 'Action non valide.');
+    }
+
+    public function questionnaire(int $id)
+    {
+        $candidature = (new CandidatureModel())->trouverAvecDetails($id);
+        if (!$candidature || (int) $candidature['candidat_id'] !== (int) session()->get('candidat_id')) {
+            return redirect()->to('/candidat/dashboard')->with('error', 'Candidature introuvable.');
+        }
+
+        if (!in_array($candidature['statut_code'], ['QUESTIONNAIRE_CONTRAT', 'ATTENTE_VALIDATION_RH'], true)) {
+            return redirect()->to("/candidat/candidature/$id")->with('error', 'Questionnaire non disponible.');
+        }
+
+        $questions = (new QuestionContratModel())->pourCandidature($id);
+        $reponses = $this->request->getPost('reponses') ?? [];
+        $remarques = $this->request->getPost('remarques') ?? [];
+        $donnees = [];
+        foreach ($questions as $question) {
+            $donnees[$question['id']] = [
+                'reponse' => $reponses[$question['id']] ?? null,
+                'remarque' => $remarques[$question['id']] ?? null,
+            ];
+        }
+
+        try {
+            $toutesOui = (new QuestionnaireContratService())->enregistrerReponses($id, $donnees);
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
+
+        $message = $toutesOui
+            ? 'Toutes les réponses sont positives. Le RH peut générer votre contrat.'
+            : 'Vos remarques ont été transmises au RH pour validation.';
+        return redirect()->to("/candidat/candidature/$id")->with('success', $message);
     }
 
     private function _changerStatut(int $id, string $code)

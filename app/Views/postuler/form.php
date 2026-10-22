@@ -13,7 +13,7 @@
     <div class="content-card-header">
         <div>
             <h2 class="content-card-title">Champs du CV</h2>
-            <div class="content-card-description">Répondez aux questions du référentiel RH.</div>
+            <div class="content-card-description">Renseignez les informations de votre CV.</div>
         </div>
     </div>
     <div class="content-card-body">
@@ -26,23 +26,6 @@
                             <option value="">-- Choisir --</option>
                             <?php foreach ($c['options'] as $o): ?>
                                 <option value="<?= $o['id'] ?>"><?= esc($o['valeur']) ?></option>
-                            <?php endforeach; ?>
-
-                            <hr class="my-4">
-                            <h3 class="content-card-title mb-3" style="font-size:1.1rem;">Questionnaire de présélection</h3>
-                            <p class="text-muted small">Répondez Oui ou Non. Une réponse Non sera vérifiée par le RH.</p>
-                            <?php foreach ($questions as $question): ?>
-                                <div class="mb-3">
-                                    <label class="form-label d-block"><?= esc($question['libelle']) ?></label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="question_<?= $question['id'] ?>" value="1" required>
-                                        <label class="form-check-label">Oui</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="question_<?= $question['id'] ?>" value="0" required>
-                                        <label class="form-check-label">Non</label>
-                                    </div>
-                                </div>
                             <?php endforeach; ?>
                         </select>
                     <?php else: ?>

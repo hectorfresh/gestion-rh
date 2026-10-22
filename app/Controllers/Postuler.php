@@ -9,8 +9,6 @@ use App\Models\StatutCandidatureModel;
 use App\Models\ChampCvModel;
 use App\Models\ValeurCvModel;
 use App\Models\ParcoursCvModel;
-use App\Models\QuestionCvModel;
-use App\Models\ReponseCvModel;
 
 class Postuler extends BaseController
 {
@@ -32,7 +30,6 @@ class Postuler extends BaseController
             'annonce'  => $annonce,
             'candidat' => (new CandidatModel())->find(session()->get('candidat_id')),
             'champs'   => (new ChampCvModel())->tousAvecOptions(),
-            'questions' => (new QuestionCvModel())->toutesOrdonnees(),
         ]);
     }
 
@@ -51,7 +48,6 @@ class Postuler extends BaseController
         }
 
         $champs = (new ChampCvModel())->tousAvecOptions();
-        $questions = (new QuestionCvModel())->toutesOrdonnees();
 
         // Vérifier que tous les champs liste ont une valeur choisie
         foreach ($champs as $c) {
@@ -59,21 +55,6 @@ class Postuler extends BaseController
                 return redirect()->back()->withInput()
                                  ->with('error', 'Veuillez répondre à tous les champs obligatoires.');
             }
-
-            $reponses = [];
-            foreach ($questions as $question) {
-                $valeur = $this->request->getPost('question_' . $question['id']);
-                if ($valeur === null || !in_array((string) $valeur, ['0', '1'], true)) {
-                    return redirect()->back()->withInput()
-                        ->with('error', 'Veuillez répondre à toutes les questions Oui/Non.');
-                }
-                $reponses[] = [
-                    'question_cv_id' => (int) $question['id'],
-                    'valeur' => (int) $valeur,
-                ];
-            }
-
-            $aUneReponseNegative = count(array_filter($reponses, static fn (array $r): bool => $r['valeur'] === 0)) > 0;
         }
 
         // 1) Créer la candidature
@@ -81,20 +62,10 @@ class Postuler extends BaseController
         $candidatureModel->insert([
             'annonce_id'       => (int) $annonce_id,
             'candidat_id'      => session()->get('candidat_id'),
-            'statut_id'        => (new StatutCandidatureModel())->idParCode(
-                $aUneReponseNegative ? 'REPONSES_A_VERIFIER' : 'EN_ATTENTE'
-            ),
+            'statut_id'        => (new StatutCandidatureModel())->idParCode('EN_ATTENTE'),
             'date_candidature' => date('Y-m-d H:i:s'),
         ]);
         $candidature_id = $candidatureModel->getInsertID();
-
-        $reponseModel = new ReponseCvModel();
-        foreach ($reponses as $reponse) {
-            $reponseModel->insert([
-                'candidature_id' => $candidature_id,
-                ...$reponse,
-            ]);
-        }
 
         // 2) Enregistrer les valeurs du CV
         $valeurModel = new ValeurCvModel();

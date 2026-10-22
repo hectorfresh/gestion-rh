@@ -20,25 +20,6 @@
             <p class="text-muted mb-0"><?= esc($candidature['poste_libelle']) ?></p>
         </div>
 
-        <?php $reponses = (new \App\Models\ReponseCvModel())->listerParCandidature((int) $candidature['id']); ?>
-        <?php if (!empty($reponses)): ?>
-        <div class="card p-4 mb-4">
-            <h4 class="mb-3"><i class="bi bi-check2-square me-1"></i> Questionnaire Oui / Non</h4>
-            <?php foreach ($reponses as $reponse): ?>
-                <div class="d-flex justify-content-between border-bottom py-2">
-                    <span><?= esc($reponse['libelle']) ?></span>
-                    <strong class="<?= (int) $reponse['valeur'] === 1 ? 'text-success' : 'text-danger' ?>">
-                        <?= (int) $reponse['valeur'] === 1 ? 'Oui' : 'Non' ?>
-                    </strong>
-                </div>
-            <?php endforeach; ?>
-            <?php if ($candidature['statut_code'] === 'REPONSES_A_VERIFIER'): ?>
-                <div class="alert alert-warning mt-3 mb-0">
-                    Le candidat a répondu Non à au moins une question. Vérifiez son dossier avant de proposer un essai ou les conditions.
-                </div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
         <div class="col-md-4 text-md-end">
             <span class="badge badge-statut statut-<?= strtolower($candidature['statut_code']) ?> fs-6">
                 <?= esc($candidature['statut_libelle']) ?>
@@ -383,6 +364,42 @@
         <?php endif; ?>
     </div>
 
+<?php elseif (in_array($candidature['statut_code'], ['QUESTIONNAIRE_CONTRAT', 'ATTENTE_VALIDATION_RH'], true)): ?>
+    <div class="card p-4 mb-3">
+        <h5><i class="bi bi-list-check me-1"></i> Confirmation avant contrat</h5>
+        <?php if ($candidature['statut_code'] === 'QUESTIONNAIRE_CONTRAT'): ?>
+            <div class="alert alert-info">Le candidat doit encore répondre au questionnaire.</div>
+        <?php else: ?>
+            <div class="alert alert-warning">Le candidat a envoyé une ou plusieurs remarques. Une décision RH est requise.</div>
+        <?php endif; ?>
+        <?php $reponsesParQuestion = array_column($reponses, null, 'question_contrat_id'); ?>
+        <?php foreach ($questions as $question): ?>
+            <?php $rep = $reponsesParQuestion[$question['id']] ?? null; ?>
+            <div class="border rounded p-3 mb-2">
+                <strong><?= esc($question['libelle']) ?></strong>
+                <div class="small text-muted"><?= esc($question['proposition']) ?></div>
+                <?php if ($rep): ?>
+                    <span class="badge bg-<?= $rep['reponse'] ? 'success' : 'danger' ?>">
+                        <?= $rep['reponse'] ? 'Oui' : 'Non' ?>
+                    </span>
+                    <?php if ($rep['remarque']): ?><p class="mb-0 mt-2"><strong>Remarque :</strong> <?= nl2br(esc($rep['remarque'])) ?></p><?php endif; ?>
+                <?php else: ?>
+                    <span class="text-muted">Pas encore de réponse.</span>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+        <?php if ($candidature['statut_code'] === 'ATTENTE_VALIDATION_RH'): ?>
+            <div class="d-flex gap-2 mt-3">
+                <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
+                    <button name="action" value="accepter_remarques" class="btn btn-success">Accepter les remarques</button>
+                </form>
+                <form method="post" action="/candidature/<?= $candidature['id'] ?>/action">
+                    <button name="action" value="refuser_remarques" class="btn btn-danger">Refuser les remarques</button>
+                </form>
+            </div>
+        <?php endif; ?>
+    </div>
+
 <?php elseif ($candidature['statut_code'] === 'CONDITIONS_REFUSEES'): ?>
     <div class="alert alert-danger">
         <i class="bi bi-exclamation-triangle me-1"></i> Le candidat a refusé la proposition.
@@ -405,7 +422,7 @@
         </div>
     </div>
 
-<?php elseif ($candidature['statut_code'] === 'CONDITIONS_ACCEPTEES'): ?>
+<?php elseif ($candidature['statut_code'] === 'CONTRAT_PRET'): ?>
     <?php
     $salaireDefaut = $candidature['salaire_final']
         ?? $candidature['salaire_negocie']

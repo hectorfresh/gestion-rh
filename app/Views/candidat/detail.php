@@ -186,5 +186,41 @@ $cv = (new \App\Models\ValeurCvModel())->listerParCandidature((int) $candidature
             <div class="alert alert-success mb-0"><i class="bi bi-check2-circle me-1"></i> Félicitations, vous êtes embauché(e) !</div>
         </div>
     </section>
+<?php elseif (in_array($candidature['statut_code'], ['QUESTIONNAIRE_CONTRAT', 'ATTENTE_VALIDATION_RH'], true) && !empty($questions)): ?>
+    <section class="content-card mb-4">
+        <div class="content-card-header">
+            <div>
+                <h2 class="content-card-title"><i class="bi bi-list-check me-1"></i> Confirmation avant contrat</h2>
+                <p class="text-muted mb-0">Répondez à chaque question. Une remarque est obligatoire si vous répondez Non.</p>
+            </div>
+        </div>
+        <div class="content-card-body">
+            <form method="post" action="/candidat/candidature/<?= $candidature['id'] ?>/questionnaire">
+                <?php foreach ($questions as $question): ?>
+                    <?php $reponse = $reponses[$question['id']] ?? null; ?>
+                    <div class="border rounded p-3 mb-3 confirmation-question">
+                        <p class="mb-1"><strong><?= esc($question['libelle']) ?></strong></p>
+                        <p class="small text-muted"><?= esc($question['proposition']) ?></p>
+                        <div class="d-flex gap-3">
+                            <label><input type="radio" name="reponses[<?= $question['id'] ?>]" value="1" required <?= $reponse && $reponse['reponse'] ? 'checked' : '' ?>> Oui</label>
+                            <label><input type="radio" name="reponses[<?= $question['id'] ?>]" value="0" required <?= $reponse && !$reponse['reponse'] ? 'checked' : '' ?>> Non</label>
+                        </div>
+                        <textarea name="remarques[<?= $question['id'] ?>]" class="form-control mt-2 remarque-condition <?= $reponse && !$reponse['reponse'] ? '' : 'd-none' ?>" placeholder="Votre remarque ou proposition"><?= esc($reponse['remarque'] ?? '') ?></textarea>
+                    </div>
+                <?php endforeach; ?>
+                <button class="btn btn-primary">Envoyer mes réponses</button>
+            </form>
+        </div>
+    </section>
+    <script>
+        document.querySelectorAll('.confirmation-question input[type="radio"]').forEach(function (input) {
+            input.addEventListener('change', function () {
+                const bloc = this.closest('.confirmation-question');
+                const remarque = bloc.querySelector('.remarque-condition');
+                remarque.classList.toggle('d-none', this.value !== '0');
+                remarque.required = this.value === '0';
+            });
+        });
+    </script>
 <?php endif; ?>
 <?= $this->endSection() ?>

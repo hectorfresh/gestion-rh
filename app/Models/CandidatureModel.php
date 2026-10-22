@@ -53,13 +53,6 @@ public function trouverAvecDetails(int $id)
                 ->first();
 }
 
-    public function aDesReponsesNegatives(int $candidatureId): bool
-    {
-        return (new \App\Models\ReponseCvModel())
-            ->where('candidature_id', $candidatureId)
-            ->where('valeur', 0)
-            ->countAllResults() > 0;
-    }
     // Liste toutes les candidatures (côté RH)
     public function listerToutes()
     {
