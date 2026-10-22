@@ -1,21 +1,21 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<header class="page-header">
     <div>
-        <h2 class="mb-1">🏆 Candidats embauchés</h2>
-        <p class="text-muted mb-0">Historique de tous les recrutements finalisés.</p>
+        <div class="page-eyebrow">Recrutement / Embauches</div>
+        <h1 class="page-title">Candidats embauchés</h1>
+        <p class="page-description">Historique de tous les recrutements finalisés.</p>
     </div>
-    <a href="/candidature" class="btn btn-outline-secondary">← Retour aux candidatures</a>
-</div>
+    <div class="btn-list">
+        <a href="/candidature" class="btn btn-outline-secondary">← Retour aux candidatures</a>
+    </div>
+</header>
 
 <?php if (empty($embauches)): ?>
-    <div class="alert alert-light border">
-        Aucun candidat embauché pour le moment.
-    </div>
+    <div class="alert alert-light border text-center py-4">Aucun candidat embauché pour le moment.</div>
 <?php else: ?>
     <?php
-    // --- Statistiques ---
     $totalEmbauches = count($embauches);
     $nbCDI = 0;
     $nbEssai = 0;
@@ -31,47 +31,49 @@
     }
     ?>
 
-    <!-- ==================== STATISTIQUES ==================== -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card p-3 h-100">
-                <p class="text-muted small mb-1">Total embauches</p>
-                <h3 class="mb-0"><?= $totalEmbauches ?></h3>
+    <div class="row row-cards g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-label">Total embauches</div>
+                <div class="stat-value"><?= $totalEmbauches ?></div>
+                <div class="stat-note">Recrutements finalisés</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card p-3 h-100">
-                <p class="text-muted small mb-1">CDI</p>
-                <h3 class="mb-0 text-success"><?= $nbCDI ?></h3>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-label">CDI</div>
+                <div class="stat-value text-success"><?= $nbCDI ?></div>
+                <div class="stat-note">Contrats à durée indéterminée</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card p-3 h-100">
-                <p class="text-muted small mb-1">Contrats d'essai</p>
-                <h3 class="mb-0 text-info"><?= $nbEssai ?></h3>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-label">Contrats d'essai</div>
+                <div class="stat-value text-info"><?= $nbEssai ?></div>
+                <div class="stat-note">En période d'essai</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card p-3 h-100">
-                <p class="text-muted small mb-1">Masse salariale annuelle</p>
-                <h3 class="mb-0"><?= number_format($masseSalariale, 0, ',', ' ') ?> Ar</h3>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-label">Masse salariale</div>
+                <div class="stat-value"><?= number_format($masseSalariale, 0, ',', ' ') ?> Ar</div>
+                <div class="stat-note">Annuelle</div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== LISTE ==================== -->
-    <div class="card">
+    <section class="content-card">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table data-table table-vcenter mb-0">
+                <thead>
                     <tr>
-                        <th style="width: 50px;">#</th>
-                        <th>Candidat</th>
-                        <th>Poste</th>
-                        <th>Contrat</th>
-                        <th>Salaire</th>
-                        <th>Dates</th>
-                        <th style="width: 100px;"></th>
+                        <th scope="col">#</th>
+                        <th scope="col">Candidat</th>
+                        <th scope="col">Poste</th>
+                        <th scope="col">Contrat</th>
+                        <th scope="col">Salaire</th>
+                        <th scope="col">Dates</th>
+                        <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,55 +81,50 @@
                     <tr>
                         <td class="text-muted"><?= $e['id'] ?></td>
                         <td>
-                            <div class="fw-bold"><?= esc($e['candidat_prenom'] . ' ' . $e['candidat_nom']) ?></div>
-                            <small class="text-muted d-block">📧 <?= esc($e['candidat_email']) ?></small>
-                            <small class="text-muted d-block">📞 <?= esc($e['candidat_telephone']) ?></small>
+                            <div class="client-cell">
+                                <div class="client-avatar"><?= strtoupper(substr($e['candidat_prenom'],0,1).substr($e['candidat_nom'],0,1)) ?></div>
+                                <div>
+                                    <div class="client-name"><?= esc($e['candidat_prenom'] . ' ' . $e['candidat_nom']) ?></div>
+                                    <div class="secondary-text"><?= esc($e['candidat_email']) ?></div>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <div><?= esc($e['poste_libelle']) ?></div>
-                            <small class="text-muted"><?= esc($e['annonce_titre']) ?></small>
+                            <div class="secondary-text"><?= esc($e['annonce_titre']) ?></div>
                         </td>
                         <td>
                             <?php if (!empty($e['contrat_type'])): ?>
-                                <span class="badge bg-<?= $e['contrat_type'] === 'CDI' ? 'success' : 'info' ?>">
-                                    <?= esc($e['contrat_type']) ?>
-                                </span>
+                                <span class="badge bg-<?= $e['contrat_type'] === 'CDI' ? 'success' : 'info' ?>"><?= esc($e['contrat_type']) ?></span>
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if (!empty($e['contrat_salaire'])): ?>
-                                <strong><?= number_format($e['contrat_salaire'], 0, ',', ' ') ?> Ar</strong>
+                                <span class="amount"><?= number_format($e['contrat_salaire'], 0, ',', ' ') ?> Ar</span>
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if (!empty($e['contrat_date_debut'])): ?>
-                                <small class="d-block">
-                                    <span class="text-muted">Début :</span> <?= esc($e['contrat_date_debut']) ?>
-                                </small>
+                                <span class="date-value"><?= esc($e['contrat_date_debut']) ?></span>
                                 <?php if (!empty($e['contrat_date_fin'])): ?>
-                                    <small class="d-block">
-                                        <span class="text-muted">Fin :</span> <?= esc($e['contrat_date_fin']) ?>
-                                    </small>
+                                    <div class="secondary-text">→ <?= esc($e['contrat_date_fin']) ?></div>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
-                        <td>
-                            <a href="/candidature/<?= $e['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                Voir la fiche
-                            </a>
+                        <td class="text-end">
+                            <a href="/candidature/<?= $e['id'] ?>" class="btn btn-sm btn-outline-primary">Voir la fiche</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-    </div>
+    </section>
 <?php endif; ?>
-
 <?= $this->endSection() ?>

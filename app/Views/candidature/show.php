@@ -1,10 +1,16 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Candidature #<?= $candidature['id'] ?></h2>
-    <a href="/candidature" class="btn btn-outline-secondary">← Retour à la liste</a>
-</div>
+<header class="page-header">
+    <div>
+        <div class="page-eyebrow">Recrutement / Candidature</div>
+        <h1 class="page-title">Candidature #<?= $candidature['id'] ?></h1>
+        <p class="page-description">Détail et traitement de la candidature.</p>
+    </div>
+    <div class="btn-list">
+        <a href="/candidature" class="btn btn-outline-secondary">← Retour à la liste</a>
+    </div>
+</header>
 
 <!-- ==================== EN-TÊTE ==================== -->
 <div class="card p-4 mb-4">
