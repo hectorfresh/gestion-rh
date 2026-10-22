@@ -1,9 +1,10 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
 
-<div class="text-center mb-5">
-    <h1 class="mb-2">💼 Rejoignez notre équipe</h1>
-    <p class="text-muted lead">Découvrez nos offres d'emploi et postulez en quelques minutes.</p>
+<div class="text-center mb-4">
+    <div class="page-eyebrow">Recrutement / Offres</div>
+    <h1 class="page-title">💼 Rejoignez notre équipe</h1>
+    <p class="page-description">Découvrez nos offres d'emploi et postulez en quelques minutes.</p>
 </div>
 
 <?php if (empty($annonces)): ?>
@@ -26,42 +27,40 @@
         <?php foreach ($annonces as $a): ?>
             <div class="col-md-6 annonce-item"
                  data-titre="<?= esc(strtolower($a['titre'] . ' ' . $a['poste_libelle'])) ?>">
-                <div class="card h-100 p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h4 class="mb-0"><?= esc($a['titre']) ?></h4>
+                <section class="content-card h-100">
+                    <div class="content-card-header">
+                        <div>
+                            <h2 class="content-card-title"><?= esc($a['titre']) ?></h2>
+                            <div class="content-card-description">Publiée le <?= date('d/m/Y', strtotime($a['date_publication'])) ?></div>
+                        </div>
                         <span class="badge bg-primary"><?= esc($a['poste_libelle']) ?></span>
                     </div>
-
-                    <p class="text-muted small mb-3">
-                        Publiée le <?= date('d/m/Y', strtotime($a['date_publication'])) ?>
-                    </p>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <div class="bg-light rounded p-2">
-                                <small class="text-muted d-block">💰 Salaire</small>
-                                <strong><?= number_format($a['salaire_propose'], 0, ',', ' ') ?> Ar</strong>
+                    <div class="content-card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="bg-light rounded p-2">
+                                    <small class="text-muted d-block">💰 Salaire</small>
+                                    <strong><?= number_format($a['salaire_propose'], 0, ',', ' ') ?> Ar</strong>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light rounded p-2">
+                                    <small class="text-muted d-block">🕐 Début</small>
+                                    <strong><?= substr($a['heure_debut'], 0, 5) ?></strong>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded p-2">
-                                <small class="text-muted d-block">🕐 Début</small>
-                                <strong><?= substr($a['heure_debut'], 0, 5) ?></strong>
-                            </div>
-                        </div>
+                        <?php if (!empty($a['autres_conditions'])): ?>
+                            <p class="small text-muted mb-3">
+                                <strong>Conditions :</strong>
+                                <?= esc(substr($a['autres_conditions'], 0, 100)) ?><?= strlen($a['autres_conditions']) > 100 ? '…' : '' ?>
+                            </p>
+                        <?php endif; ?>
+                        <a href="/annonces/<?= $a['id'] ?>" class="btn btn-primary mt-auto align-self-start">
+                            Voir l'offre →
+                        </a>
                     </div>
-
-                    <?php if (!empty($a['autres_conditions'])): ?>
-                        <p class="small text-muted mb-3">
-                            <strong>Conditions :</strong>
-                            <?= esc(substr($a['autres_conditions'], 0, 100)) ?><?= strlen($a['autres_conditions']) > 100 ? '…' : '' ?>
-                        </p>
-                    <?php endif; ?>
-
-                    <a href="/annonces/<?= $a['id'] ?>" class="btn btn-primary mt-auto align-self-start">
-                        Voir l'offre →
-                    </a>
-                </div>
+                </section>
             </div>
         <?php endforeach; ?>
     </div>
@@ -87,5 +86,4 @@
         });
     }
 </script>
-
 <?= $this->endSection() ?>
