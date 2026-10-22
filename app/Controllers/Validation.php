@@ -38,8 +38,9 @@ class Validation extends BaseController
         return view('validation/show', [
             'besoin'   => $besoin,
             'restant'  => $budget->restant(),
+            'coutAnnuel' => $budget->coutAnnuelBesoin((float) $besoin['cout_engage']),
             'engage'   => $budget->totalEngage(),
-            'total'    => $budget->montantTotal(),
+            'total'     => $budget->montantTotal(),
         ]);
     }
 
@@ -93,17 +94,23 @@ class Validation extends BaseController
         );
 
         // 2) Vérification automatique du budget (rôle "finance")
-        $budget  = new BudgetModel();
-        $restant = $budget->restant();
+        $budget = new BudgetModel();
+        $annee = (int) date('Y');
+        $restant = $budget->budgetRestantAnnuel($annee);
+        $coutAnnuel = $budget->coutAnnuelBesoin(
+            (float) $besoin['cout_engage']
+        );
 
-        if ($besoin['cout_engage'] <= $restant) {
+        if ($coutAnnuel <= $restant) {
             // Budget suffisant → validation finance automatique
             $this->_enregistrerValidation(
                 $besoin['id'],
                 null,                 // pas d'utilisateur : automatique
                 'FINANCE',
                 'Validé',
-                'Validation automatique : budget suffisant.'
+                'Validation automatique : budget annuel restant suffisant. '
+                . 'Masse salariale active : ' . $budget->masseSalarialeAnnuelle($annee)
+                . ' Ar ; coût annuel du besoin : ' . $coutAnnuel . ' Ar.'
             );
             $this->_changerStatut($besoin['id'], 'EN_ATTENTE_DG');
 
@@ -117,13 +124,13 @@ class Validation extends BaseController
             null,
             'FINANCE',
             'Refusé',
-            'Budget insuffisant (coût : ' . $besoin['cout_engage']
+            'Budget annuel insuffisant (coût annuel : ' . $coutAnnuel
                 . ' Ar, restant : ' . $restant . ' Ar).'
         );
         $this->_changerStatut($besoin['id'], 'REFUSE_FINANCE');
 
         return redirect()->to('/validation')
-                         ->with('error', 'Budget insuffisant : besoin refusé automatiquement par la finance.');
+                         ->with('error', 'Budget annuel insuffisant : besoin refusé automatiquement par la finance.');
     }
 
     private function _changerStatut(int $besoin_id, string $code)

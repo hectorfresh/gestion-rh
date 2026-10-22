@@ -33,8 +33,27 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Département</label>
+                        <select name="departement_id" class="form-select">
+                            <option value="">-- Choisir un département --</option>
+                            <?php foreach ($departements as $departement): ?>
+                                <option value="<?= $departement['id'] ?>" <?= old('departement_id') == $departement['id'] ? 'selected' : '' ?>>
+                                    <?= esc($departement['libelle']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Nombre de postes</label>
                         <input type="number" name="nombre_postes" min="1" value="<?= esc(old('nombre_postes', 1)) ?>" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date souhaitée</label>
+                        <input type="date" name="date_souhaitee" value="<?= esc(old('date_souhaitee')) ?>" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motif du recrutement</label>
+                        <textarea name="motif" maxlength="255" class="form-control" rows="2"><?= esc(old('motif')) ?></textarea>
                     </div>
                     <p class="text-muted small">Le budget engagé sera calculé (salaire max × nombre).</p>
                     <div class="btn-list">

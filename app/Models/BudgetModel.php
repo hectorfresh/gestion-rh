@@ -17,26 +17,55 @@ class BudgetModel extends Model
         return $ligne ? (float) $ligne['montant_total'] : 0.0;
     }
 
-    // Somme des besoins qui "engagent" du budget
-    public function totalEngage()
+    public function masseSalarialeAnnuelle(int $annee): float
     {
         $db = \Config\Database::connect();
-        $result = $db->table('besoin')
-                     ->selectSum('besoin.cout_engage', 'total')
-                     ->join('statut_besoin', 'statut_besoin.id = besoin.statut_id')
-                     ->whereIn('statut_besoin.code', [
-                         'EN_ATTENTE_DG',
-                         'VALIDE',
-                         'RECRUTEMENT_OUVERT',
-                     ])
-                     ->get()
-                     ->getRow();
-        return $result && $result->total ? (float) $result->total : 0.0;
+        $debut = sprintf('%04d-01-01', $annee);
+        $fin = sprintf('%04d-12-31', $annee);
+        $result = $db->table('contrat')
+            ->select('COALESCE(SUM(contrat.salaire * 12), 0) AS total', false)
+            ->join('employe', 'employe.id = contrat.employe_id')
+            ->where('employe.statut', 'ACTIF')
+            ->where('contrat.date_debut <=', $fin)
+            ->groupStart()
+                ->where('contrat.date_fin IS NULL', null, false)
+                ->orWhere('contrat.date_fin >=', $debut)
+            ->groupEnd()
+            ->get()
+            ->getRow();
+
+        return $result ? (float) $result->total : 0.0;
     }
 
-    // Budget restant = total - engagé
-    public function restant()
+    public function budgetRestantAnnuel(?int $annee = null): float
     {
-        return $this->montantTotal() - $this->totalEngage();
+        $annee ??= (int) date('Y');
+
+        return $this->montantTotal() - $this->masseSalarialeAnnuelle($annee);
+    }
+
+    /**
+     * $coutMensuel représente le coût mensuel total du besoin.
+     * besoin.cout_engage contient déjà salaire_max × nombre_postes.
+     */
+    public function coutAnnuelBesoin(float $coutMensuel, int $nombrePostes = 1): float
+    {
+        return $coutMensuel * $nombrePostes * 12;
+    }
+
+    public function budgetSuffisantPourBesoin(float $coutMensuel, int $nombrePostes = 1, ?int $annee = null): bool
+    {
+        return $this->budgetRestantAnnuel($annee) >= $this->coutAnnuelBesoin($coutMensuel, $nombrePostes);
+    }
+
+    // Compatibilité avec les anciennes vues : le calcul utilise désormais la masse salariale annuelle.
+    public function totalEngage(): float
+    {
+        return $this->montantTotal() - $this->budgetRestantAnnuel();
+    }
+
+    public function restant(): float
+    {
+        return $this->budgetRestantAnnuel();
     }
 }

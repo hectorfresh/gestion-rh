@@ -5,7 +5,7 @@
     <div>
         <div class="page-eyebrow">Direction / Validation DG</div>
         <h1 class="page-title">Besoins en attente de validation DG</h1>
-        <p class="page-description">Décision finale sur les besoins validés par la finance.</p>
+        <p class="page-description">Décision finale sur les besoins validés automatiquement par la finance.</p>
     </div>
 </header>
 

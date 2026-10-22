@@ -9,6 +9,12 @@ INSERT INTO role (id, libelle) VALUES
     (2, 'RH'),
     (3, 'DG');
 
+INSERT INTO departement (code, libelle) VALUES
+    ('IT', 'Informatique'),
+    ('FIN', 'Finance'),
+    ('RH', 'Ressources humaines'),
+    ('COM', 'Commercial');
+
 -- Utilisateurs (mot de passe = "password" pour tous, à changer après)
 -- Hash bcrypt connu pour "password"
 INSERT INTO utilisateur (id, nom, email, mot_de_passe, role_id) VALUES
@@ -52,6 +58,9 @@ INSERT INTO budget (id, montant_total) VALUES
 
 INSERT INTO statut_candidature (id, code, libelle) VALUES
     (1,  'EN_ATTENTE',            'En attente'),
+    (11, 'REPONSES_A_VERIFIER',   'Réponses à vérifier par le RH'),
+    (12, 'SALAIRE_ATTENTE_FINANCE','Salaire en attente de validation Finance'),
+    (13, 'SALAIRE_ATTENTE_DG',     'Salaire en attente de validation DG'),
     (2,  'ESSAI_PROPOSE',         'Essai proposé'),
     (3,  'ESSAI_REFUSE',          'Essai refusé par le candidat'),
     (4,  'ESSAI_EFFECTUE',        'Essai effectué'),
@@ -128,8 +137,6 @@ INSERT INTO question_cv (libelle, ordre) VALUES
 INSERT INTO champ_cv (id, libelle, type, ordre) VALUES
     (1, 'Diplôme le plus élevé',  'liste', 1),
     (2, 'Années d''expérience',   'liste', 2),
-    (3, 'Niveau en PHP',          'liste', 3),
-    (4, 'Niveau en MySQL',        'liste', 4),
     (5, 'Disponibilité',          'liste', 5),
     (6, 'Permis de conduire',     'liste', 6),
     (7, 'Présentation rapide',    'texte', 7);
@@ -147,17 +154,7 @@ INSERT INTO option_champ_cv (champ_cv_id, valeur, ordre) VALUES
     (2, 'Junior (1-3 ans)', 2),
     (2, 'Confirmé (3-5 ans)', 3),
     (2, 'Senior (5 ans et +)', 4),
-    -- 3) Niveau PHP
-    (3, 'Débutant', 1),
-    (3, 'Intermédiaire', 2),
-    (3, 'Avancé', 3),
-    (3, 'Expert', 4),
-    -- 4) Niveau MySQL
-    (4, 'Débutant', 1),
-    (4, 'Intermédiaire', 2),
-    (4, 'Avancé', 3),
-    (4, 'Expert', 4),
-    -- 5) Disponibilité
+     -- 5) Disponibilité
     (5, 'Immédiate', 1),
     (5, 'Sous 1 mois', 2),
     (5, 'Sous 3 mois', 3),

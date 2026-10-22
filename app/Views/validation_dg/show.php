@@ -74,8 +74,8 @@
                 <textarea name="commentaire" rows="3" class="form-control"></textarea>
             </div>
             <div class="btn-list">
-                <button type="submit" name="decision" value="valider" class="btn btn-success">✓ Valider</button>
-                <button type="submit" name="decision" value="refuser" class="btn btn-danger">✗ Refuser</button>
+                <button type="submit" name="decision" value="valider" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Valider</button>
+                <button type="submit" name="decision" value="refuser" class="btn btn-danger"><i class="bi bi-x-lg me-1"></i> Refuser</button>
                 <a href="/dg" class="btn btn-outline-secondary">Annuler</a>
             </div>
         </form>

@@ -7,6 +7,11 @@ use App\Models\StatutCandidatureModel;
 use App\Models\EssaiModel;
 use App\Models\ContratModel;
 use App\Models\TypeContratModel;
+use App\Services\EmployeService;
+use App\Services\ContratService;
+use App\Services\OnboardingService;
+use App\Services\AffectationService;
+use App\Services\ValidationSalaireService;
 
 class Candidature extends BaseController
 {
@@ -49,7 +54,7 @@ class Candidature extends BaseController
         $titre  = $candidature['annonce_titre'];
 
         // ============ EN_ATTENTE ============
-        if ($statut === 'EN_ATTENTE') {
+        if (in_array($statut, ['EN_ATTENTE', 'REPONSES_A_VERIFIER'], true)) {
             if ($action === 'refuser') {
                 $this->_changerStatut($id, 'CANDIDAT_NON_RETENU');
                 envoyer_email($email, 'Candidature non retenue',
@@ -119,12 +124,15 @@ if ($statut === 'SALAIRE_EN_NEGOCIATION') {
 
     if ($action === 'accepter_nego') {
         if ($candidature['salaire_negocie'] > $poste->salaire_max) {
+            (new ValidationSalaireService())->soumettreFinance(
+                (int) $id,
+                (float) $candidature['salaire_negocie'],
+                (int) session()->get('user_id'),
+                'Dépassement du plafond salarial : validation RH demandée.'
+            );
+            $this->_changerStatut($id, 'SALAIRE_ATTENTE_FINANCE');
             return redirect()->to("/candidature/$id")
-                             ->with('error', 'Salaire demandé ('
-                                 . number_format($candidature['salaire_negocie'], 0, ',', ' ')
-                                 . ' Ar) supérieur au maximum autorisé ('
-                                 . number_format($poste->salaire_max, 0, ',', ' ')
-                                 . ' Ar). Utilisez "Proposer le salaire max".');
+                ->with('success', 'Le salaire dépasse le plafond. La demande suit le workflow RH → Finance → DG.');
         }
 
         (new CandidatureModel())->update($id, [
@@ -187,8 +195,40 @@ if ($statut === 'CONDITIONS_REFUSEES') {
 
         // ============ CONDITIONS_ACCEPTEES → établir contrat ============
 if ($statut === 'CONDITIONS_ACCEPTEES' && $action === 'etablir_contrat') {
+    if (!$this->validate([
+        'type_contrat' => 'required|in_list[CDI,CDD,Essai]',
+        'salaire' => 'required|numeric|greater_than[0]',
+        'date_debut' => 'required|valid_date[Y-m-d]',
+        'date_fin' => 'permit_empty|valid_date[Y-m-d]',
+    ])) {
+        return redirect()->back()->withInput()->with('error', 'Informations de contrat invalides.');
+    }
+
     $salaireSaisi = (float) $this->request->getPost('salaire');
-    $this->_creerContrat($id, $salaireSaisi);
+    $dateDebut = (string) $this->request->getPost('date_debut');
+    $dateFin = $this->request->getPost('date_fin') ?: null;
+    $employeId = (new EmployeService())->creerDepuisCandidat(
+        (int) $candidature['candidat_id'],
+        $dateDebut
+    );
+    (new AffectationService())->affecter(
+        $employeId,
+        (int) $candidature['poste_id'],
+        $candidature['departement_id'] ? (int) $candidature['departement_id'] : null,
+        $dateDebut
+    );
+    (new ContratService())->creer(
+        (int) $id,
+        $employeId,
+        (string) $this->request->getPost('type_contrat'),
+        $salaireSaisi,
+        $dateDebut,
+        $dateFin
+    );
+    $onboardingId = (new OnboardingService())->creer($employeId, $dateDebut);
+    $onboardingService = new OnboardingService();
+    $onboardingService->ajouterTache($onboardingId, 'Signer et archiver le contrat', 'RH');
+    $onboardingService->ajouterTache($onboardingId, 'Préparer le poste de travail', 'Manager');
     $this->_changerStatut($id, 'CANDIDAT_EMBAUCHE');
 
     // Clôturer l'annonce (1 annonce = 1 poste = pourvue dès qu'1 candidat est embauché)
@@ -220,17 +260,4 @@ if ($statut === 'CONDITIONS_ACCEPTEES' && $action === 'etablir_contrat') {
         ]);
     }
 
-    private function _creerContrat(int $candidature_id, float $salaire)
-    {
-        $typeLibelle = $this->request->getPost('type_contrat');
-        $typeId = (new TypeContratModel())->idParLibelle($typeLibelle);
-
-        (new ContratModel())->insert([
-            'candidature_id'  => $candidature_id,
-            'type_contrat_id' => $typeId,
-            'salaire'         => $salaire,
-            'date_debut'      => $this->request->getPost('date_debut'),
-            'date_fin'        => $this->request->getPost('date_fin') ?: null,
-        ]);
-    }
 }

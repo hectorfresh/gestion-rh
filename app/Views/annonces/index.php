@@ -3,7 +3,7 @@
 
 <div class="text-center mb-4">
     <div class="page-eyebrow">Recrutement / Offres</div>
-    <h1 class="page-title">💼 Rejoignez notre équipe</h1>
+    <h1 class="page-title"><i class="bi bi-briefcase me-1"></i> Rejoignez notre équipe</h1>
     <p class="page-description">Découvrez nos offres d'emploi et postulez en quelques minutes.</p>
 </div>
 
@@ -18,7 +18,7 @@
             <strong><?= count($annonces) ?></strong> offre(s) disponible(s)
         </p>
         <div class="input-group" style="max-width: 320px;">
-            <span class="input-group-text bg-white">🔍</span>
+            <span class="input-group-text bg-white"><i class="bi bi-search me-1"></i></span>
             <input type="text" id="recherche" class="form-control" placeholder="Rechercher un poste...">
         </div>
     </div>
@@ -39,13 +39,13 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="bg-light rounded p-2">
-                                    <small class="text-muted d-block">💰 Salaire</small>
+                                    <small class="text-muted d-block"><i class="bi bi-cash me-1"></i> Salaire</small>
                                     <strong><?= number_format($a['salaire_propose'], 0, ',', ' ') ?> Ar</strong>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="bg-light rounded p-2">
-                                    <small class="text-muted d-block">🕐 Début</small>
+                                    <small class="text-muted d-block"><i class="bi bi-clock me-1"></i> Début</small>
                                     <strong><?= substr($a['heure_debut'], 0, 5) ?></strong>
                                 </div>
                             </div>

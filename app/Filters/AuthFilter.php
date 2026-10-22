@@ -23,7 +23,13 @@ public function before(RequestInterface $request, $arguments = null)
     // 3) Vérification du rôle demandé
     if (!empty($arguments)) {
         $roleUtilisateur = session()->get('role');
-        if (!in_array($roleUtilisateur, $arguments)) {
+        $rolesAutorises = [];
+        foreach ($arguments as $argument) {
+            $rolesAutorises = array_merge($rolesAutorises, explode(',', $argument));
+        }
+        $rolesAutorises = array_map('trim', $rolesAutorises);
+
+        if (!in_array($roleUtilisateur, $rolesAutorises, true)) {
             return redirect()->to('/dashboard')
                              ->with('error', 'Accès refusé.');
         }

@@ -14,6 +14,8 @@ $nom         = session()->get('nom');
 
     <!-- Tabler Core -->
     <link rel="stylesheet" href="<?= base_url('css/tabler.min.css') ?>">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Design system AdminFlow (extrait des templates) -->
     <link rel="stylesheet" href="<?= base_url('css/adminflow.css') ?>">
 </head>
@@ -37,7 +39,7 @@ $nom         = session()->get('nom');
                         <path d="M12 11L4 7"></path>
                     </svg>
                 </span>
-                <span class="brand-name">Gestion<span>RH</span></span>
+                <span class="brand-name">Gestion<span>RH KOBA</span></span>
             </a>
 
             <div class="workspace">
@@ -128,6 +130,11 @@ $nom         = session()->get('nom');
                             </a>
                         </li>
                         <li>
+                            <a href="/validation-salaire/validees" class="sidebar-link <?= str_starts_with($uri, 'validation-salaire/validees') ? 'active' : '' ?>">
+                                <span>Salaires validés DG</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="/emails" class="sidebar-link <?= str_starts_with($uri, 'emails') ? 'active' : '' ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <rect x="3" y="5" width="18" height="14" rx="2"></rect>
@@ -151,6 +158,11 @@ $nom         = session()->get('nom');
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                                 <span>Validation DG</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/validation-salaire/dg" class="sidebar-link <?= str_starts_with($uri, 'validation-salaire/dg') ? 'active' : '' ?>">
+                                <span>Validation salaires</span>
                             </a>
                         </li>
                     </ul>
@@ -287,5 +299,25 @@ $nom         = session()->get('nom');
 
 <!-- Tabler JS (optionnel, pour composants interactifs) -->
 <script src="<?= base_url('js/tabler.min.js') ?>" defer></script>
+<script>
+    // Empêche la saisie de nombres négatifs dans les champs numériques
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[type="number"]').forEach(function (input) {
+            // Bloque la touche "-" et "e" (exposant) si min >= 0
+            input.addEventListener('keydown', function (e) {
+                if ((e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') &&
+                    (this.min === '' || parseFloat(this.min) >= 0)) {
+                    e.preventDefault();
+                }
+            });
+            // Clamp à 0 si une valeur négative est collée/saisie
+            input.addEventListener('input', function () {
+                if (this.value !== '' && parseFloat(this.value) < 0) {
+                    this.value = this.min !== '' ? this.min : 0;
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

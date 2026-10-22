@@ -9,17 +9,19 @@ class BesoinModel extends Model
     protected $table         = 'besoin';
     protected $primaryKey    = 'id';
     protected $allowedFields = [
-        'poste_id', 'manager_id', 'nombre_postes',
-        'cout_engage', 'date_creation', 'statut_id'
+        'poste_id', 'manager_id', 'departement_id', 'nombre_postes',
+        'cout_engage', 'date_creation', 'date_souhaitee', 'motif', 'statut_id'
     ];
 
     // Liste des besoins d'un manager (avec libellés poste + statut)
     public function listerParManager(int $manager_id)
     {
         return $this->select('besoin.*, poste.libelle AS poste_libelle,
+                              departement.libelle AS departement_libelle,
                               statut_besoin.libelle AS statut_libelle,
                               statut_besoin.code AS statut_code')
                     ->join('poste', 'poste.id = besoin.poste_id')
+                    ->join('departement', 'departement.id = besoin.departement_id', 'left')
                     ->join('statut_besoin', 'statut_besoin.id = besoin.statut_id')
                     ->where('besoin.manager_id', $manager_id)
                     ->orderBy('besoin.date_creation', 'DESC')
@@ -30,10 +32,12 @@ class BesoinModel extends Model
     public function trouverAvecDetails(int $id)
     {
         return $this->select('besoin.*, poste.libelle AS poste_libelle,
+                              departement.libelle AS departement_libelle,
                               statut_besoin.libelle AS statut_libelle,
                               statut_besoin.code AS statut_code,
                               utilisateur.nom AS manager_nom')
                     ->join('poste', 'poste.id = besoin.poste_id')
+                    ->join('departement', 'departement.id = besoin.departement_id', 'left')
                     ->join('statut_besoin', 'statut_besoin.id = besoin.statut_id')
                     ->join('utilisateur', 'utilisateur.id = besoin.manager_id')
                     ->where('besoin.id', $id)

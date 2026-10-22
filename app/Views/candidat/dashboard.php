@@ -8,7 +8,7 @@
         <p class="page-description">Suivez l'état de vos candidatures.</p>
     </div>
     <div class="btn-list">
-        <a href="/annonces" class="btn btn-primary">🌐 Voir les annonces</a>
+        <a href="/annonces" class="btn btn-primary"><i class="bi bi-globe me-1"></i> Voir les annonces</a>
     </div>
 </header>
 
