@@ -1,26 +1,35 @@
 <?= $this->extend('layout') ?>
 <?= $this->section('content') ?>
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Mes candidatures</h2>
-    <a href="/annonces" class="btn btn-primary">🌐 Voir les annonces</a>
-</div>
+
+<header class="page-header">
+    <div>
+        <div class="page-eyebrow">Espace candidat</div>
+        <h1 class="page-title">Mes candidatures</h1>
+        <p class="page-description">Suivez l'état de vos candidatures.</p>
+    </div>
+    <div class="btn-list">
+        <a href="/annonces" class="btn btn-primary">🌐 Voir les annonces</a>
+    </div>
+</header>
 
 <?php if (empty($candidatures)): ?>
-    <div class="alert alert-light border">Aucune candidature pour l'instant.</div>
+    <div class="alert alert-light border text-center py-4">Aucune candidature pour l'instant.</div>
 <?php else: ?>
     <div class="row g-3">
         <?php foreach ($candidatures as $c): ?>
             <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex justify-content-between">
+                <section class="content-card h-100">
+                    <div class="content-card-header">
                         <div>
-                            <h5 class="mb-1"><?= esc($c['annonce_titre']) ?></h5>
-                            <p class="text-muted small mb-2"><?= esc($c['poste_libelle']) ?> — <?= esc($c['date_candidature']) ?></p>
+                            <h2 class="content-card-title"><?= esc($c['annonce_titre']) ?></h2>
+                            <div class="content-card-description"><?= esc($c['poste_libelle']) ?> — <?= esc($c['date_candidature']) ?></div>
                         </div>
                         <span class="badge badge-statut statut-<?= strtolower($c['statut_code']) ?>"><?= esc($c['statut_libelle']) ?></span>
                     </div>
-                    <a href="/candidat/candidature/<?= $c['id'] ?>" class="btn btn-outline-primary btn-sm mt-2">Voir le détail</a>
-                </div>
+                    <div class="content-card-body">
+                        <a href="/candidat/candidature/<?= $c['id'] ?>" class="btn btn-outline-primary btn-sm">Voir le détail</a>
+                    </div>
+                </section>
             </div>
         <?php endforeach; ?>
     </div>

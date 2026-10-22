@@ -2,28 +2,16 @@
 <?= $this->section('content') ?>
 <div class="row justify-content-center"><div class="col-md-7">
     <div class="card p-4">
-        <h3 class="mb-3">Créer <?= $nbRestantes > 1 ? 'les annonces' : 'une annonce' ?> — Besoin #<?= $besoin['id'] ?></h3>
-
-        <?php if ($nbRestantes > 1): ?>
-            <div class="alert alert-info">
-                📢 <strong>Ce formulaire va créer <?= $nbRestantes ?> annonces identiques</strong>
-                (une par poste à pourvoir). Les titres seront automatiquement numérotés :
-                <em>"<?= esc(old('titre', 'Recrutement ' . $besoin['poste_libelle'])) ?> (1/<?= $besoin['nombre_postes'] ?>)"
-                , "… (2/<?= $besoin['nombre_postes'] ?>)"</em>, etc.
-            </div>
-        <?php endif; ?>
-
+        <h3 class="mb-4">Créer une annonce — Besoin #<?= $besoin['id'] ?></h3>
         <p class="text-muted small">
-            <?= esc($besoin['poste_libelle']) ?> —
-            <strong><?= $nbAnnonces ?? 0 ?> / <?= $besoin['nombre_postes'] ?></strong> annonce(s) déjà créée(s)
+            <?= esc($besoin['poste_libelle']) ?> — <?= $nbAnnonces ?? 0 ?> / <?= $besoin['nombre_postes'] ?> annonce(s) créée(s)
             <br>Fourchette : <?= number_format($poste->salaire_min, 0, ',', ' ') ?>
             à <?= number_format($poste->salaire_max, 0, ',', ' ') ?> Ar
         </p>
-
         <form method="post" action="/annonce/create">
             <input type="hidden" name="besoin_id" value="<?= $besoin['id'] ?>">
             <div class="mb-3">
-                <label class="form-label">Titre <?= $nbRestantes > 1 ? 'de base' : '' ?></label>
+                <label class="form-label">Titre</label>
                 <input type="text" name="titre" class="form-control"
                        value="<?= esc(old('titre', 'Recrutement ' . $besoin['poste_libelle'])) ?>" required>
             </div>
@@ -49,11 +37,9 @@
                 <label class="form-label">Autres conditions (optionnel)</label>
                 <textarea name="autres_conditions" rows="2" class="form-control"><?= esc(old('autres_conditions')) ?></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">
-                <?= $nbRestantes > 1 ? "Publier les {$nbRestantes} annonces" : 'Publier' ?>
-            </button>
+            <button type="submit" class="btn btn-primary">Publier</button>
             <a href="/annonce" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
-</div></div>
+</div>
 <?= $this->endSection() ?>
