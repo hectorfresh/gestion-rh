@@ -7,8 +7,7 @@ class CandidatModel extends Model
     protected $table      = 'candidat';
     protected $primaryKey = 'id';
     protected $allowedFields = [
-        'nom', 'prenom', 'email', 'mot_de_passe', 'telephone',
-        'diplome', 'annees_experience', 'competences', 'motivation'
+        'nom', 'prenom', 'email', 'mot_de_passe', 'telephone'
     ];
 
     public function trouverParEmail(string $email)

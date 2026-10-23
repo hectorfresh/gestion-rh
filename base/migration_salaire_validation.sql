@@ -1,6 +1,7 @@
 USE gestion_besoins;
 
 INSERT IGNORE INTO statut_candidature (code, libelle) VALUES
+    ('EN_ATTENTE', 'En attente'),
     ('SALAIRE_ATTENTE_FINANCE', 'Salaire en attente de validation Finance'),
     ('SALAIRE_ATTENTE_DG', 'Salaire en attente de validation DG');
 

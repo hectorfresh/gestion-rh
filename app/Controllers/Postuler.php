@@ -9,6 +9,7 @@ use App\Models\StatutCandidatureModel;
 use App\Models\ChampCvModel;
 use App\Models\ValeurCvModel;
 use App\Models\ParcoursCvModel;
+use RuntimeException;
 
 class Postuler extends BaseController
 {
@@ -57,12 +58,21 @@ class Postuler extends BaseController
             }
         }
 
+        try {
+            $statutId = (new StatutCandidatureModel())->idParCodeObligatoire('EN_ATTENTE');
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                $exception->getMessage() . ' Exécutez base/migration_salaire_validation.sql.'
+            );
+        }
+
         // 1) Créer la candidature
         $candidatureModel = new CandidatureModel();
         $candidatureModel->insert([
             'annonce_id'       => (int) $annonce_id,
             'candidat_id'      => session()->get('candidat_id'),
-            'statut_id'        => (new StatutCandidatureModel())->idParCode('EN_ATTENTE'),
+            'statut_id'        => $statutId,
             'date_candidature' => date('Y-m-d H:i:s'),
         ]);
         $candidature_id = $candidatureModel->getInsertID();
